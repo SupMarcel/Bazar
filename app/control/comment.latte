@@ -1,0 +1,24 @@
+<div>
+    <strong>{$comment[$commentAuthor] |authorname}</strong>
+    <p>{$comment[$commentText]}</p>
+    <script>
+        function showForm(id){
+            var form = document.getElementById(id);
+            form.style.display = form.style.display == "none" ? "block" : "none";
+        }
+    </script>
+    <button onclick="showForm({$comment[$commentID]})">Přidat reakci</button>
+    {if $loggedIn === true}
+        <noscript>
+            {control addReactionForm}
+        </noscript>
+        <div id="{$comment[$commentID]}" style="display: none">
+            {control addReactionForm}
+        </div>
+    {/if}
+    <div class="reactionList">
+        {foreach $reactions as $reaction}
+            {control reaction-$reaction[$commentID]}
+        {/foreach}
+    </div>
+</div>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="cs">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{$basePath}/css/style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"  integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<title>{$offer[$title]}</title>
+</head>
+
+<body>
+<nav>
+    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+        <h1>{$offer[$title]}</h1>
+        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+            {if $loggedIn === true}
+                {if $icon != null}
+                    <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+                {else}
+                    <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+                {/if}
+                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$usernameLogged}</a></span>
+                <div class="buttons">
+                    <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                    <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
+                </div>
+            {/if}
+            {if $loggedIn === false}
+                <div class="buttons">
+                    <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                    <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+                </div>
+            {/if}
+        </div>
+    </div>
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a n:href="Homepage:default">Domovská stránka</a></li>
+        <li class="breadcrumb-item"><a n:href="Offer:list">Seznam nabídek</a></li>
+        {foreach $categoryHierarchy as $category}
+            <li class="breadcrumb-item"><a n:href="Offer:list $category['id']">{$category['title']}</a></li>
+        {/foreach}
+        <li class="breadcrumb-item active">Detail nabídky {$offer[$title]}</li>
+    </ul>
+</nav>
+<article>
+    <div class="w-100 d-flex flex-wrap">
+        <ul class="d-inline-block list-unstyled pr-2">
+            <li>
+                <strong>Lokalita</strong>
+            </li>
+            <li>
+                {$city}
+            </li>
+        </ul>
+
+        <ul class="d-inline-block list-unstyled px-2">
+            <li>
+                <strong>Název</strong>
+            </li>
+            <li>
+                {$offer[$title]}
+            </li>
+        </ul>
+
+        <ul class="d-inline-block list-unstyled pl-2">
+            <li>
+                <strong>Cena</strong>
+            </li>
+            <li>
+                {$offer[$price]}
+            </li>
+        </ul>
+    </div>
+    <div class="w-100 d-block clear-both">
+        <img id="mainPhoto" class="w-50 float-left" src="{$basePath}/images/offers/{$offer[$mainPhoto]}">
+        <p>{$offer[$description]}</p>
+    </div>
+    <script>
+        function changeImage(base, path){
+            var image = document.getElementById("mainPhoto");
+            image.setAttribute("src", base+"/images/offers/"+path);
+        }
+    </script>
+    <div class="w-100 d-flex flex-wrap">
+        {foreach $images as $image}
+            <img height="50" onclick="changeImage({$basePath}, {$image[$imagePath]})" src="{$basePath}/images/offers/{$image[$imagePath]}">
+        {/foreach}
+    </div>
+    <div class="w-100 d-flex flex-wrap">
+        <ul class="d-inline-block list-unstyled pr-2">
+            <li>
+                <strong>Prodejce</strong>
+            </li>
+            <li>
+                {$author[$firstname]} {$author[$lastname]} ({$author[$username]})
+            </li>
+        </ul>
+
+        <ul class="d-inline-block list-unstyled px-2">
+            <li>
+                <strong>E-mail</strong>
+            </li>
+            <li>
+                {$author[$email]}
+            </li>
+        </ul>
+
+        <ul class="d-inline-block list-unstyled px-2">
+            <li>
+                <strong>Telefon</strong>
+            </li>
+            <li>
+                {$author[$phone]}
+            </li>
+        </ul>
+
+        <ul class="d-inline-block list-unstyled pl-2">
+            <li>
+                <strong>Kdy je možné volat</strong>
+            </li>
+            <li>
+                {$author[$time]}
+            </li>
+        </ul>
+    </div>
+</article>
+{if $loggedIn === true}
+{control addCommentForm}
+{else}
+    <span>Pro přidávání komentářů se musíte přihlásit.</span>
+{/if}
+<div>
+{foreach $comments as $comment}
+    {control comment-$comment[$commentID]}
+{/foreach}
+</div>
+</body>
+
+</html>

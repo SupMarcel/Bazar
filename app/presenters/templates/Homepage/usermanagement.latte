@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="cs">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{$basePath}/css/style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"  integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<title>Bubovický bazar</title>
+</head>
+
+<body>
+<nav>
+    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+        <h1>Bubovický bazar</h1>
+        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+        {if $loggedIn === true}
+            {if $icon != null}
+                <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+            {else}
+                <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+            {/if}
+            <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
+            <div class="buttons">
+                <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
+            </div>
+        {/if}
+        {if $loggedIn === false}
+            <div class="buttons" class="bg-light-green">
+                <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+            </div>
+        {/if}
+        </div>
+    </div>
+
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item active">Domovská stránka</li>
+    </ul>
+</nav>
+<ul>
+	{foreach $users as $user}
+	<li>{$user[$username]} <a href="{$basePath}/homepage/removeuser?id={$user[$userId]}">Smazat uživatele</a></li>
+	{/foreach}
+</ul>
+</body>
+
+</html>

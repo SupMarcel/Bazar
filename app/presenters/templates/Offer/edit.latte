@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="cs">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{$basePath}/css/style.css">
+    <script src="{$basePath}/bower_components/jquery/dist/jquery.js"></script>
+    <script src="{$basePath}/bower_components/nette-forms/src/assets/netteForms.js"></script>
+    <script src="{$basePath}/bower_components/nette.ajax.js/nette.ajax.js"></script>
+    <script>
+        $.nette.init();
+    </script>
+    <script>
+        function removePhoto(id){
+            $.nette.ajax({
+                type: 'GET',
+                url: {plink removephoto!},
+                data: {
+                    "photoID": id
+                }
+            });
+        }
+
+        function changeMainPhoto(id){
+            $.nette.ajax({
+                type: 'GET',
+                url: {plink changemainphoto!},
+                data: {
+                    "photoID": id
+                }
+            });
+        }
+
+        function uploadPhotos(id){
+            var files = document.getElementById("fileupload").files;
+            var formdata = new FormData();
+            formdata.append("offerID", id);
+            formdata.append("countFiles", files.length);
+            for(var i = 0; i < files.length; i++){
+                formdata.append('image'+i, files[i]);
+            }
+            $.nette.ajax({
+                type: 'POST',
+                url: {plink uploadfiles!},
+                data: formdata,
+                contentType: false,
+                processData: false
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<title>Editace nabídky</title>
+</head>
+
+<body>
+<nav>
+    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+        <h1>Editace nabídky</h1>
+        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+            {if $loggedIn === true}
+                {if $icon != null}
+                    <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+                {else}
+                    <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+                {/if}
+                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
+                <div class="buttons">
+                    <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                    <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
+                </div>
+            {/if}
+            {if $loggedIn === false}
+                <div class="buttons">
+                    <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                        <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+                </div>
+            {/if}
+        </div>
+    </div>
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a n:href="Homepage:default">Domovská stránka</a></li>
+        <li class="breadcrumb-item"><a n:href="Offer:manage">Správa nabídek</a></li>
+        <li class="breadcrumb-item active">Editace nabídky</li>
+    </ul>
+</nav>
+
+{form editForm-$offerID}
+    <ul class="errors list-unstyled" n:if="$form->hasErrors()">
+        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
+    </ul>
+    <div class="form-group">
+        <label>{label title/}</label>
+        <input class="form-control" type="text" n:name=title>
+        {inputError title}
+    </div>
+    <div class="form-group">
+        <label>{label price/}</label>
+        <input class="form-control" type="number" n:name=price>
+        {inputError price}
+    </div>
+    <div class="form-group">
+        {label description/}
+        <textarea class="form-control" n:name=description></textarea>
+        {inputError description}
+    </div>
+    <div class="form-group">
+        <label>{label category/}</label>
+        {input category}
+        {inputError category}
+    </div>
+    {snippet allPhotos}
+        <div class="d-flex flex-wrap">
+            {foreach $photos as $photo}
+                <div class="width15 d-flex flex-column my-3 mx-3">
+                    <img class="width15" src="{$basePath}/images/offers/{$photo[$photoPath]}">
+                    {if $moreThanOnePhoto == true}
+                        <span class="btn btn-danger" onclick="removePhoto({$photo[$photoID]})">Odstranit</span>
+                        {if $photo[$photoPath] != $mainPhoto}
+                            <span class="btn btn-secondary" onclick="changeMainPhoto({$photo[$photoID]})">Nastavit jako hlavní fotografii</span>
+                        {/if}
+                    {/if}
+                </div>
+            {/foreach}
+        </div>
+    {/snippet}
+    <div class="form-group">
+        <label>{label photos/}</label>
+        <input class="form-control-file" id="fileupload" name="photos" type="file" multiple onchange="uploadPhotos({$offerID})">
+    </div>
+    <input class="btn btn-primary" type="submit" n:name=addOffer value="Upravit nabídku">
+{/form}
+
+</body>
+
+</html>

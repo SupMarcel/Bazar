@@ -1,0 +1,31 @@
+{block content}
+<nav>
+    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+        <h1>Úprava údajů</h1>
+        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+            {if $loggedIn === true}
+                {if $icon != null}
+                    <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+                {else}
+                    <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+                {/if}
+                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$usernameLogged}</a></span>
+                <div class="buttons">
+                    <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                    <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
+                </div>
+            {/if}
+            {if $loggedIn === false}
+                <div class="buttons">
+                    <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                        <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+                </div>
+            {/if}
+        </div>
+    </div>
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a n:href="Homepage:default">Domovská stránka</a></li>
+        <li class="breadcrumb-item active">Úprava údajů</li>
+    </ul>
+</nav>
+{control editForm}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="cs">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{$basePath}/css/style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"  integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<title>Bubovický bazar</title>
+</head>
+
+<body>
+<nav>
+    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+        <h1>Bubovický bazar</h1>
+        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+        {if $loggedIn === true}
+            {if $icon != null}
+                <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+            {else}
+                <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+            {/if}
+            <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
+            <div class="buttons">
+                <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
+            </div>
+        {/if}
+        {if $loggedIn === false}
+            <div class="buttons" class="bg-light-green">
+                <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+            </div>
+        {/if}
+        </div>
+    </div>
+
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item active">Domovská stránka</li>
+    </ul>
+</nav>
+{control searchForm}
+<ul class="list-unstyled d-flex flex-wrap">
+    {foreach $categories as $id => $category}
+        <li class="border border-dark sizeByMedia justify-content-between bg-light-yellow">
+            <a n:href="Offer:list $id" class="all m-0 p-3 d-block">
+
+                {if $category["image"] != ""}
+                    <img height="40" src="{$basePath}/images/categories/{$category["image"]}">
+                {/if}
+                {$category["title"]}   <span class="float-right pl-3">{$category["countOffers"]}</span>
+            </a>
+        </li>
+    {/foreach}
+</ul>
+{if $noItems}
+V bazaru nejsou žádné položky.
+{else}
+<div class="w-100 d-flex flex-wrap">
+{foreach $offers as $offer}
+    <a class="width14 justify-content-between" n:href="Offer:detail $offer['id']">
+        <div class="card width14 border border-dark">
+            <div class="card-header">
+                <h2 style="font-size: 1rem; height:6rem">{$offer[$title]}</h2>
+                <img style="height: 10rem" src="{$basePath}/images/offers/{$offer[$image]}">
+            </div>
+            <div class="card-body">
+                <span class="d-block">{$offer[$price]} Kč</span>
+                <span class="d-block">{$offer[$offerOwner] |cityName}</span>
+            </div>
+        </div>
+    </a>
+{/foreach}
+</div>
+<div class="pagination">
+    {if $page > 1}
+        <a n:href="default, 1">První</a>
+        &nbsp;|&nbsp;
+        <a n:href="default, $page-1">Předchozí</a>
+        &nbsp;|&nbsp;
+    {/if}
+
+    Stránka {$page} z {$lastPage}
+
+    {if $page < $lastPage}
+        &nbsp;|&nbsp;
+        <a n:href="default, $page+1">Další</a>
+        &nbsp;|&nbsp;
+        <a n:href="default, $lastPage">Poslední</a>
+    {/if}
+</div>
+{/if}
+<img border="0" class="largePicture"
+ src="{$basePath}/images/hlo.jpg">
+<p class="firstCapitol">Bubovický bazar je alternativou
+k regionálním bleším trhům a zahradním bazarům. Dnes v době internetu je
+snadné vyfotit předmět a umístit fotografie společně s popisem na tyto stránky! Můžete vlastně využívat výhod &quot;virtuálního blešího trhu&quot;,
+který není omezen časově, tak jak tomu je u toho &quot;fyzického&quot;.
+Tento regionální bazar má oproti jiným bazarovým serverům svá specifika.
+Předpokládá, že pro předmět se potenciální zájemce zastaví osobně,
+prohlédne si ho a potom Vám zaplatí. Tím odpadají velké starosti s tím
+jak předmět zabalit, náklady na poštovné a dobírku, cesta na poštu a vystání
+fronty a v neposlední řadě eliminace problémů s reklamací předmětu nebo
+nepřevzetí předmětu ze strany zákazníka. Můžete proto nabídnout i předměty
+nepatrné hodnoty a udělat někomu radost, aniž by byl výsledný efekt
+devalvován dodatečnými náklady.</p>
+
+<p class="firstCapitol">Při úklidu se najde spousta věcí,
+které je škoda vyhodit, ale vy víte, že je již nebudete potřebovat. Jejich
+prodej by měl být pro Vás skutečně snadný, bezpečný a transparentní.
+Neměl by Vám přidělávat starosti! Ozkuste právě proto Bubovický bazar,
+který je tu pro Vás!</p>
+<h2>Prodejci a prodávání</h2>
+<img class="largePicture" src="{$basePath}/images/prodejce.jpg">
+<p class="secondCapitol">Bubovický bazar umožňuje každému
+nabídnout k prodeji libovolný předmět,který je umístěn v katastru obce
+Bubovice a jehož majitel je schopen zajistit v obci Bubovice osobní odběr.
+Tuto službu poskytuje Bubovický bazar bezplatně.</p>
+<p class="secondCapitol">U nabízeného předmětu je potřeba
+stanovit konkrétní cenu. Uvedení &quot;cena dohodou není možná&quot;</p>
+<p class="secondCapitol">Prodejce pro potřeby realizace
+obchodu zveřejňuje svoji emailovou adresu a telefonní číslo (s vyhrazenou
+dobou pro komunikaci).Prodejce zveřejněním svého inzerátu souhlasí s uveřejněním
+těchto údajů.</p>
+<div class="divClass secondCapitol">Je zakázáno nabízet:
+    <ul>
+        <li>zbraně</li>
+        <li>výbušniny</li>
+        <li>předměty propagující násilí</li>
+        <li>léky</li>
+        <li>omamné a psychotropní látky</li>
+        <li>pornografii</li>
+    </ul>
+</div>
+<p class="secondCapitol">Prodejce je povinen po realizaci
+obchodu odstranit tento inzerát z nabídky.</p>
+<h2>Kupující</h2>
+<img class="largePicture" src="{$basePath}/images/kupující.png"/>
+<p class="thirdCapitol">Kupující je povinen projevit svůj
+zájem tím způsobem, že kontaktuje prodejce na jeho uveřejněný email, nebo
+telefonní číslo.</p>
+<p class="thirdCapitol">Kupující je povinen si
+vyzvednout předmět osobně v Bubovicích na adrese, kterou mu sdělí kupující</p>
+<p class="thirdCapitol">Kupující si musí před vlastním
+prodejem předmět prohlédnout a rozhodnout se jestli bude realizovat obchod
+nebo ne. V případě, že se rozhodne ke koupi a stvrdí ho platbou nemá již
+následně právo na reklamaci pokud se písemně nedomluví s prodejcem jinak
+(může se domluvit na kupní smlouvě - týká se dražších předmětů).</p>
+<p class="thirdCapitol">V případě, že se chce kupující
+podílet na hodnocení prodejce musí se zaregistrovat též jako prodejce.</p>
+<footer class="w-100" style="clear: both">
+<p class="my-3">Tuto aplikaci vyrobil Daniel Šup. Náměty a připomínky zašlete na e-mailovou adresu: <a href="mailto:oktagon@seznam.cz">oktagon@seznam.cz</a></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="cs">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{$basePath}/css/style.css">
+<title>Přidání nové nabídky</title>
+</head>
+
+<body>
+<nav>
+    {if $loggedIn === true}
+        {if $icon != null}
+            <img height='50' src="{$basePath}/images/icons/{$icon}">
+        {else}
+            <img height="50" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+        {/if}
+        Přihlášen jako <a n:href="Sign:update">{$username}</a>
+        <a n:href="Sign:out">Odhlásit se</a>
+    {/if}
+    {if $loggedIn === false}
+        <a n:href="Sign:in">Přihlásit se</a>
+    {/if}
+    <ul>
+        <li><a n:href="Offer:list">Seznam nabídek</a></li>
+        {if $loggedIn === true}
+            <li><a n:href="Offer:manage">Správa nabídek</a></li>
+        {/if}
+    </ul>
+    <ul>
+        <li><a n:href="Homepage:default">Domovská stránka</a></li>
+        <li><a n:href="Offer:list">Seznam nabídek</a></li>
+        <li>Přidání nové nabídky</li>
+    </ul>
+</nav>
+<h1>Přidání nové nabídky</h1>
+{control addForm}
+
+</body>
+
+</html>

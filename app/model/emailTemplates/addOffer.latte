@@ -1,0 +1,20 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Přidání zboží</title>
+</head>
+<body>
+<p style="font-weight: bolder; font-size: 1.5rem">Přidání nové položky ve Vašem účtu Bubovický bazar</p>
+
+<p>Na Vašem účtu v Bubovickém bazaru byla přidána nová položka, a to tato:</p>
+<a n:href="Offer:detail $offerId">
+    <div class="border border-dark">
+        <p><strong>{$title}</strong></p>
+        <p>{$price} Kč</p>
+        <p>{$description}</p>
+    </div>
+</a>
+Text komentáře: {$textOfComment}
+<p>Nechcete-li dostávat tento typ zpráv, prosím klikněte <a n:href="Homepage:cancelEmailSubscription $userId">zde.</a></p>
+</body>
+</html>
