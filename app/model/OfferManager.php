@@ -76,15 +76,13 @@ class OfferManager extends BaseManager
         $canSend = $user[UserManager::COLUMN_EMAIL_SUBSCRIPTION];
         if($canSend){
             $template = $this->sender->createTemplate();
-            $file = $edit === true ? __DIR__ . '/emailTemplates/editOffer.latte' :
-                __DIR__ . '/emailTemplates/addOffer.latte';
+            $file = $edit === true ? __DIR__ . '/emailTemplates/editOffer.latte' : __DIR__ . '/emailTemplates/addOffer.latte';
             $template->setFile($file);
             $template->offerId = $offerID;
             $template->userId = $userID;
             $template->title = $title;
             $template->price = $price;
-            $template->description = mb_strlen($description) > 50 ?
-                mb_substr($description, 0, 50)."..." : $description;
+            $template->description = mb_strlen($description) > 50 ? mb_substr($description, 0, 50)."..." : $description;
             $message = new Message;
             $subject = $edit === true ? "Editace Vaší položky ve vašem účtu Bubovický bazar" :
                 "Přidání nové položky ve vašem účtu Bubovický bazar";

@@ -78,20 +78,20 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 	public function add($properties)
 	{
 		try {
-			$this->database->table(self::TABLE_NAME)->insert([
-				self::COLUMN_NAME => $properties[self::COLUMN_NAME],
-				self::COLUMN_PASSWORD_HASH => Passwords::hash($properties["heslo"]),
-				self::COLUMN_EMAIL => $properties[self::COLUMN_EMAIL],
-                self::COLUMN_PHONE => $properties[self::COLUMN_PHONE],
-                self::COLUMN_FIRSTNAME => $properties[self::COLUMN_FIRSTNAME],
-                self::COLUMN_LASTNAME => $properties[self::COLUMN_LASTNAME],
-                self::COLUMN_CITY => BaseManager::CITY,
-                self::COLUMN_TIME => $properties[self::COLUMN_TIME],
-                self::COLUMN_NOTE => $properties[self::COLUMN_NOTE],
-                self::COLUMN_SEX => $properties[self::COLUMN_SEX],
-                self::COLUMN_ICON => $properties[self::COLUMN_ICON],
-                self::COLUMN_ROLE => "NORMALUSER"
-            ]);
+                    $this->database->table(self::TABLE_NAME)->insert([
+                        self::COLUMN_NAME => $properties[self::COLUMN_NAME],
+                        self::COLUMN_PASSWORD_HASH => Passwords::hash($properties["heslo"]),
+                        self::COLUMN_EMAIL => $properties[self::COLUMN_EMAIL],
+                        self::COLUMN_PHONE => $properties[self::COLUMN_PHONE],
+                        self::COLUMN_FIRSTNAME => $properties[self::COLUMN_FIRSTNAME],
+                        self::COLUMN_LASTNAME => $properties[self::COLUMN_LASTNAME],
+                        self::COLUMN_CITY => BaseManager::CITY,
+                        self::COLUMN_TIME => $properties[self::COLUMN_TIME],
+                        self::COLUMN_NOTE => $properties[self::COLUMN_NOTE],
+                        self::COLUMN_SEX => $properties[self::COLUMN_SEX],
+                        self::COLUMN_ICON => $properties[self::COLUMN_ICON],
+                        self::COLUMN_ROLE => "NORMALUSER"
+                    ]);
 		} catch (Nette\Database\UniqueConstraintViolationException $e) {
 			throw new DuplicateNameException;
 		}

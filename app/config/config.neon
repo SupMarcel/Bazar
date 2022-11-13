@@ -16,9 +16,9 @@ session:
 
 
 database:
-	dsn: 'mysql:host=c146um.forpsi.com;port=3306;dbname=f61861'
-	user: f61861
-	password: 3FSsuxf8
+	dsn: 'mysql:host=localhost;dbname=f61861'
+	user: root
+	password:
 	options:
 		lazy: yes
 

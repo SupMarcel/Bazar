@@ -114,30 +114,30 @@ class SignUpFormFactory
 
 		$form->onSuccess[] = function (Form $form, $values) use ($onSuccess) {
 			try {
-                $filename = null;
-                if(!empty($values["icon"]->getName())){
-                    $filename = $values["icon"]->getName();
-                    $path = __DIR__ . "/../../www/images/icons/" . $filename;
-                    while(file_exists($path)) {
-                        $filename = "0".$filename;
-                        $path = __DIR__ . "/../../www/images/icons/" . $filename;
-                    }
-                    $values["icon"]->move($path);
-                }
+                            $filename = null;
+                            if(!empty($values["icon"]->getName())){
+                                $filename = $values["icon"]->getName();
+                                $path = __DIR__ . "/../../www/images/icons/" . $filename;
+                                while(file_exists($path)) {
+                                    $filename = "0".$filename;
+                                    $path = __DIR__ . "/../../www/images/icons/" . $filename;
+                                }
+                                $values["icon"]->move($path);
+                            }
 
 			    $array = [Model\UserManager::COLUMN_NAME => $values["username"],
-                    Model\UserManager::COLUMN_EMAIL => $values["email"],
-                    "heslo" => $values["password"],
-                    Model\UserManager::COLUMN_PHONE => $values["phone"],
-                    Model\UserManager::COLUMN_FIRSTNAME => $values["firstname"],
-                    Model\UserManager::COLUMN_LASTNAME => $values["lastname"],
-                    Model\UserManager::COLUMN_TIME => $values["time"],
-                    Model\UserManager::COLUMN_SEX => $values["sex"],
-                    Model\UserManager::COLUMN_ICON => $filename,
-                    Model\UserManager::COLUMN_NOTE => $values["note"]];
-				$this->userManager->add($array);
-				$this->registrationManager->sendRegisterEmail($values["username"],
-                    $values["password"], $values["email"]);
+                                      Model\UserManager::COLUMN_EMAIL => $values["email"],
+                                      "heslo" => $values["password"],
+                                      Model\UserManager::COLUMN_PHONE => $values["phone"],
+                                      Model\UserManager::COLUMN_FIRSTNAME => $values["firstname"],
+                                      Model\UserManager::COLUMN_LASTNAME => $values["lastname"],
+                                      Model\UserManager::COLUMN_TIME => $values["time"],
+                                      Model\UserManager::COLUMN_SEX => $values["sex"],
+                                      Model\UserManager::COLUMN_ICON => $filename,
+                                      Model\UserManager::COLUMN_NOTE => $values["note"]];
+                            $this->userManager->add($array);
+                            $this->registrationManager->sendRegisterEmail($values["username"],
+                            $values["password"], $values["email"]);
 			} catch (Model\DuplicateNameException $e) {
 				$form['username']->addError('Uživatelské jméno je již zvolené někým jiným.');
 				return;
