@@ -5,6 +5,8 @@
  * Copyright (c) 2008 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Latte\Runtime;
 
 use Latte;
@@ -18,11 +20,12 @@ class SnippetDriver
 {
 	use Latte\Strict;
 
-	const TYPE_STATIC = 'static',
+	public const
+		TYPE_STATIC = 'static',
 		TYPE_DYNAMIC = 'dynamic',
 		TYPE_AREA = 'area';
 
-	/** @var array */
+	/** @var array<array{string, bool}> */
 	private $stack = [];
 
 	/** @var int */
@@ -31,21 +34,27 @@ class SnippetDriver
 	/** @var bool */
 	private $renderingSnippets = false;
 
-	/** @var ISnippetBridge */
+	/** @var SnippetBridge */
 	private $bridge;
 
 
-	public function __construct(ISnippetBridge $bridge)
+	public function __construct(SnippetBridge $bridge)
 	{
 		$this->bridge = $bridge;
 	}
 
 
-	public function enter($name, $type)
+	public function enter(string $name, string $type): void
 	{
 		if (!$this->renderingSnippets) {
+			if ($type === self::TYPE_DYNAMIC && $this->nestingLevel === 0) {
+				trigger_error('Dynamic snippets are allowed only inside static snippet/snippetArea.', E_USER_WARNING);
+			}
+
+			$this->nestingLevel++;
 			return;
 		}
+
 		$obStarted = false;
 		if (
 			($this->nestingLevel === 0 && $this->bridge->needsRedraw($name))
@@ -57,17 +66,20 @@ class SnippetDriver
 		} elseif ($this->nestingLevel > 0) {
 			$this->nestingLevel++;
 		}
+
 		$this->stack[] = [$name, $obStarted];
 		$this->bridge->markRedrawn($name);
 	}
 
 
-	public function leave()
+	public function leave(): void
 	{
 		if (!$this->renderingSnippets) {
+			$this->nestingLevel--;
 			return;
 		}
-		list($name, $obStarted) = array_pop($this->stack);
+
+		[$name, $obStarted] = array_pop($this->stack);
 		if ($this->nestingLevel > 0 && --$this->nestingLevel === 0) {
 			$content = ob_get_clean();
 			$this->bridge->addSnippet($name, $content);
@@ -77,26 +89,33 @@ class SnippetDriver
 	}
 
 
-	public function getHtmlId($name)
+	public function getHtmlId(string $name): string
 	{
 		return $this->bridge->getHtmlId($name);
 	}
 
 
-	public function renderSnippets(array $blocks, array $params)
+	/**
+	 * @param  Block[]  $blocks
+	 * @param  mixed[]  $params
+	 */
+	public function renderSnippets(array $blocks, array $params): bool
 	{
 		if ($this->renderingSnippets || !$this->bridge->isSnippetMode()) {
 			return false;
 		}
+
 		$this->renderingSnippets = true;
 		$this->bridge->setSnippetMode(false);
-		foreach ($blocks as $name => $function) {
-			if ($name[0] !== '_' || !$this->bridge->needsRedraw(substr($name, 1))) {
+		foreach ($blocks as $name => $block) {
+			if (!$this->bridge->needsRedraw($name)) {
 				continue;
 			}
-			$function = reset($function);
+
+			$function = reset($block->functions);
 			$function($params);
 		}
+
 		$this->bridge->setSnippetMode(true);
 		$this->bridge->renderChildren();
 		return true;

@@ -5,79 +5,96 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\Neon;
 
 
 /**
- * Simple generator for Nette Object Notation.
+ * Converts value to NEON format.
+ * @internal
  */
-class Encoder
+final class Encoder
 {
-	const BLOCK = 1;
+	/** @deprecated */
+	public const BLOCK = true;
+
+	/** @var bool */
+	public $blockMode = false;
+
+	/** @var string */
+	public $indentation = "\t";
 
 
 	/**
 	 * Returns the NEON representation of a value.
-	 * @param  mixed  $var
-	 * @param  int  $options
-	 * @return string
 	 */
-	public function encode($var, $options = null)
+	public function encode($val): string
 	{
-		if ($var instanceof \DateTimeInterface) {
-			return $var->format('Y-m-d H:i:s O');
+		$node = $this->valueToNode($val, $this->blockMode);
+		return $node->toString();
+	}
 
-		} elseif ($var instanceof Entity) {
-			if ($var->value === Neon::CHAIN) {
-				return implode('', array_map([$this, 'encode'], $var->attributes));
+
+	public function valueToNode($val, bool $blockMode = false): Node
+	{
+		if ($val instanceof \DateTimeInterface) {
+			return new Node\LiteralNode($val);
+
+		} elseif ($val instanceof Entity && $val->value === Neon::Chain) {
+			$node = new Node\EntityChainNode;
+			foreach ($val->attributes as $entity) {
+				$node->chain[] = $this->valueToNode($entity);
 			}
-			return $this->encode($var->value) . '('
-				. (is_array($var->attributes) ? substr($this->encode($var->attributes), 1, -1) : '') . ')';
-		}
 
-		if (is_object($var)) {
-			$obj = $var;
-			$var = [];
-			foreach ($obj as $k => $v) {
-				$var[$k] = $v;
-			}
-		}
+			return $node;
 
-		if (is_array($var)) {
-			$isList = !$var || array_keys($var) === range(0, count($var) - 1);
-			$s = '';
-			if ($options & self::BLOCK) {
-				if (count($var) === 0) {
-					return '[]';
-				}
-				foreach ($var as $k => $v) {
-					$v = $this->encode($v, self::BLOCK);
-					$s .= ($isList ? '-' : $this->encode($k) . ':')
-						. (strpos($v, "\n") === false
-							? ' ' . $v . "\n"
-							: "\n" . preg_replace('#^(?=.)#m', "\t", $v) . (substr($v, -2, 1) === "\n" ? '' : "\n"));
-				}
-				return $s;
+		} elseif ($val instanceof Entity) {
+			return new Node\EntityNode(
+				$this->valueToNode($val->value),
+				$this->arrayToNodes((array) $val->attributes)
+			);
 
+		} elseif (is_object($val) || is_array($val)) {
+			if ($blockMode) {
+				$node = new Node\BlockArrayNode;
 			} else {
-				foreach ($var as $k => $v) {
-					$s .= ($isList ? '' : $this->encode($k) . ': ') . $this->encode($v) . ', ';
-				}
-				return ($isList ? '[' : '{') . substr($s, 0, -2) . ($isList ? ']' : '}');
+				$isList = is_array($val) && (!$val || array_keys($val) === range(0, count($val) - 1));
+				$node = new Node\InlineArrayNode($isList ? '[' : '{');
 			}
 
-		} elseif (is_string($var) && !is_numeric($var)
-			&& !preg_match('~[\x00-\x1F]|^\d{4}|^(true|false|yes|no|on|off|null)\z~i', $var)
-			&& preg_match('~^' . Decoder::PATTERNS[1] . '\z~x', $var) // 1 = literals
-		) {
-			return $var;
+			$node->items = $this->arrayToNodes($val, $blockMode);
+			return $node;
 
-		} elseif (is_float($var)) {
-			$var = json_encode($var);
-			return strpos($var, '.') === false ? $var . '.0' : $var;
+		} elseif (is_string($val) && Lexer::requiresDelimiters($val)) {
+			return new Node\StringNode($val);
 
 		} else {
-			return json_encode($var, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			return new Node\LiteralNode($val);
 		}
+	}
+
+
+	/** @return Node\ArrayItemNode[] */
+	private function arrayToNodes($val, bool $blockMode = false): array
+	{
+		$res = [];
+		$counter = 0;
+		$hide = true;
+		foreach ($val as $k => $v) {
+			$res[] = $item = new Node\ArrayItemNode;
+			$item->key = $hide && $k === $counter ? null : self::valueToNode($k);
+			$item->value = self::valueToNode($v, $blockMode);
+			if ($item->value instanceof Node\BlockArrayNode) {
+				$item->value->indentation = $this->indentation;
+			}
+
+			if ($hide && is_int($k)) {
+				$hide = $k === $counter;
+				$counter = max($k + 1, $counter);
+			}
+		}
+
+		return $res;
 	}
 }

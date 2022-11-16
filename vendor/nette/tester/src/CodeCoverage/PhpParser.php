@@ -5,6 +5,8 @@
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Tester\CodeCoverage;
 
 
@@ -19,9 +21,6 @@ namespace Tester\CodeCoverage;
 class PhpParser
 {
 	/**
-	 * @param  string  PHP code to analyze
-	 * @return \stdClass
-	 *
 	 * Returned structure is:
 	 *     stdClass {
 	 *         linesOfCode: int,
@@ -52,9 +51,9 @@ class PhpParser
 	 *         visibility: public|protected|private
 	 *     }
 	 */
-	public function parse($code)
+	public function parse(string $code): \stdClass
 	{
-		$tokens = @token_get_all($code); // @ - source code can be written in newer PHP
+		$tokens = token_get_all($code, TOKEN_PARSE);
 
 		$level = $classLevel = $functionLevel = null;
 		$namespace = '';
@@ -77,7 +76,8 @@ class PhpParser
 
 			switch (is_array($token) ? $token[0] : $token) {
 				case T_NAMESPACE:
-					$namespace = ltrim(self::fetch($tokens, [T_STRING, T_NS_SEPARATOR]) . '\\', '\\');
+					$namespace = self::fetch($tokens, [T_STRING, PHP_VERSION_ID < 80000 ? T_NS_SEPARATOR : T_NAME_QUALIFIED]);
+					$namespace = ltrim($namespace . '\\', '\\');
 					break;
 
 				case T_CLASS:
@@ -99,6 +99,7 @@ class PhpParser
 							'methods' => [],
 						];
 					}
+
 					break;
 
 				case T_PUBLIC:
@@ -118,7 +119,7 @@ class PhpParser
 							$function = (object) [
 								'start' => $line,
 								'end' => null,
-								'visibility' => isset($visibility) ? $visibility : 'public',
+								'visibility' => $visibility ?? 'public',
 							];
 
 						} else {
@@ -128,8 +129,10 @@ class PhpParser
 								'end' => null,
 							];
 						}
+
 						$functionLevel = $level + 1;
 					}
+
 					unset($visibility, $isAbstract);
 					break;
 
@@ -148,6 +151,7 @@ class PhpParser
 						$class->end = $line;
 						unset($class);
 					}
+
 					$level--;
 					break;
 
@@ -167,18 +171,20 @@ class PhpParser
 	}
 
 
-	private static function fetch(&$tokens, $take)
+	private static function fetch(array &$tokens, $take): ?string
 	{
 		$res = null;
 		while ($token = current($tokens)) {
-			list($token, $s) = is_array($token) ? $token : [$token, $token];
+			[$token, $s] = is_array($token) ? $token : [$token, $token];
 			if (in_array($token, (array) $take, true)) {
 				$res .= $s;
 			} elseif (!in_array($token, [T_DOC_COMMENT, T_WHITESPACE, T_COMMENT], true)) {
 				break;
 			}
+
 			next($tokens);
 		}
+
 		return $res;
 	}
 }

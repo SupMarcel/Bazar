@@ -145,7 +145,7 @@ class OfferManager extends BaseManager
 
     public function filterOffer($offer, $category,
                                 $title = null, $priceFrom = null, $priceTo = null){
-        if($offer{self::COLUMN_CATEGORY} != $category && $category !== null){
+        if($offer[self::COLUMN_CATEGORY] != $category && $category !== null){
             return false;
         }
         $isHigherThanLowest = $priceFrom === null || $offer[self::COLUMN_PRICE] >= $priceFrom;

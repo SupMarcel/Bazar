@@ -5,6 +5,8 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\Forms\Controls;
 
 use Nette;
@@ -22,7 +24,7 @@ class MultiSelectBox extends MultiChoiceControl
 	private $optionAttributes = [];
 
 
-	public function __construct($label = null, array $items = null)
+	public function __construct($label = null, ?array $items = null)
 	{
 		parent::__construct($label, $items);
 		$this->setOption('type', 'select');
@@ -33,7 +35,7 @@ class MultiSelectBox extends MultiChoiceControl
 	 * Sets options and option groups from which to choose.
 	 * @return static
 	 */
-	public function setItems(array $items, $useKeys = true)
+	public function setItems(array $items, bool $useKeys = true)
 	{
 		if (!$useKeys) {
 			$res = [];
@@ -47,18 +49,16 @@ class MultiSelectBox extends MultiChoiceControl
 					$res[(string) $value] = $value;
 				}
 			}
+
 			$items = $res;
 		}
+
 		$this->options = $items;
 		return parent::setItems(Nette\Utils\Arrays::flatten($items, true));
 	}
 
 
-	/**
-	 * Generates control's HTML element.
-	 * @return Nette\Utils\Html
-	 */
-	public function getControl()
+	public function getControl(): Nette\Utils\Html
 	{
 		$items = [];
 		foreach ($this->options as $key => $value) {
@@ -75,12 +75,24 @@ class MultiSelectBox extends MultiChoiceControl
 	}
 
 
-	/**
-	 * @return static
-	 */
+	/** @return static */
 	public function addOptionAttributes(array $attributes)
 	{
 		$this->optionAttributes = $attributes + $this->optionAttributes;
 		return $this;
+	}
+
+
+	/** @return static */
+	public function setOptionAttribute(string $name, $value = true)
+	{
+		$this->optionAttributes[$name] = $value;
+		return $this;
+	}
+
+
+	public function getOptionAttributes(): array
+	{
+		return $this->optionAttributes;
 	}
 }

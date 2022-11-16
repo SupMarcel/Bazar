@@ -1,0 +1,19 @@
+services:
+    router: App\Router\RouterFactory::createRouter
+    - App\Model\BaseManager
+    - App\Model\Sender
+    - App\Model\CategoryManager
+    - App\Model\CityManager
+    - App\Model\CommentManager
+    - App\Model\OfferManager
+    - App\Model\PhotoManager
+    - App\Model\ReportManager
+    - App\Model\UserManager
+    - App\Model\CommentAndOfferManager
+    - App\Model\RegistrationManager
+    - App\Control\CommentControl
+    - App\Forms\FormFactory
+    - App\Forms\OfferFormFactory
+    - App\Forms\CommentFormFactory
+    - App\Forms\SignInFormFactory
+    - App\Forms\SignUpFormFactory

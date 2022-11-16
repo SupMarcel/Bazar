@@ -5,12 +5,14 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator\Traits;
 
 use Nette;
-use Nette\PhpGenerator\Helpers;
+use Nette\PhpGenerator\Dumper;
 use Nette\PhpGenerator\Parameter;
-use Nette\PhpGenerator\PhpNamespace;
+use Nette\Utils\Type;
 
 
 /**
@@ -18,218 +20,144 @@ use Nette\PhpGenerator\PhpNamespace;
  */
 trait FunctionLike
 {
-	/** @var string */
-	private $body = '';
+	private string $body = '';
 
-	/** @var array of name => Parameter */
-	private $parameters = [];
-
-	/** @var bool */
-	private $variadic = false;
-
-	/** @var string|null */
-	private $returnType;
-
-	/** @var bool */
-	private $returnReference = false;
-
-	/** @var bool */
-	private $returnNullable = false;
-
-	/** @var PhpNamespace|null */
-	private $namespace;
+	/** @var Parameter[] */
+	private array $parameters = [];
+	private bool $variadic = false;
+	private ?string $returnType = null;
+	private bool $returnReference = false;
+	private bool $returnNullable = false;
 
 
-	/**
-	 * @param  string
-	 * @return static
-	 */
-	public function setBody($code, array $args = null)
+	/** @param  ?mixed[]  $args */
+	public function setBody(string $code, ?array $args = null): static
 	{
-		$this->body = $args === null ? $code : Helpers::formatArgs($code, $args);
+		$this->body = $args === null
+			? $code
+			: (new Dumper)->format($code, ...$args);
 		return $this;
 	}
 
 
-	/**
-	 * @return string
-	 */
-	public function getBody()
+	public function getBody(): string
 	{
 		return $this->body;
 	}
 
 
-	/**
-	 * @param  string
-	 * @return static
-	 */
-	public function addBody($code, array $args = null)
+	/** @param  ?mixed[]  $args */
+	public function addBody(string $code, ?array $args = null): static
 	{
-		$this->body .= ($args === null ? $code : Helpers::formatArgs($code, $args)) . "\n";
+		$this->body .= ($args === null ? $code : (new Dumper)->format($code, ...$args)) . "\n";
 		return $this;
 	}
 
 
 	/**
-	 * @param  Parameter[]
-	 * @return static
+	 * @param  Parameter[]  $val
 	 */
-	public function setParameters(array $val)
+	public function setParameters(array $val): static
 	{
+		(function (Parameter ...$val) {})(...$val);
 		$this->parameters = [];
 		foreach ($val as $v) {
-			if (!$v instanceof Parameter) {
-				throw new Nette\InvalidArgumentException('Argument must be Nette\PhpGenerator\Parameter[].');
-			}
 			$this->parameters[$v->getName()] = $v;
 		}
+
 		return $this;
 	}
 
 
-	/**
-	 * @return Parameter[]
-	 */
-	public function getParameters()
+	/** @return Parameter[] */
+	public function getParameters(): array
 	{
 		return $this->parameters;
 	}
 
 
 	/**
-	 * @param  string  without $
-	 * @return Parameter
+	 * @param  string  $name without $
 	 */
-	public function addParameter($name, $defaultValue = null)
+	public function addParameter(string $name, mixed $defaultValue = null): Parameter
 	{
 		$param = new Parameter($name);
 		if (func_num_args() > 1) {
-			$param->setOptional(true)->setDefaultValue($defaultValue);
+			$param->setDefaultValue($defaultValue);
 		}
+
 		return $this->parameters[$name] = $param;
 	}
 
 
 	/**
-	 * @param  bool
-	 * @return static
+	 * @param  string  $name without $
 	 */
-	public function setVariadic($state = true)
+	public function removeParameter(string $name): static
 	{
-		$this->variadic = (bool) $state;
+		unset($this->parameters[$name]);
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function isVariadic()
+	public function setVariadic(bool $state = true): static
+	{
+		$this->variadic = $state;
+		return $this;
+	}
+
+
+	public function isVariadic(): bool
 	{
 		return $this->variadic;
 	}
 
 
-	/**
-	 * @param  string|null
-	 * @return static
-	 */
-	public function setReturnType($val)
+	public function setReturnType(?string $type): static
 	{
-		$this->returnType = $val ? (string) $val : null;
+		$this->returnType = Nette\PhpGenerator\Helpers::validateType($type, $this->returnNullable);
 		return $this;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
-	public function getReturnType()
+	public function getReturnType(bool $asObject = false): Type|string|null
 	{
-		return $this->returnType;
+		return $asObject && $this->returnType
+			? Type::fromString($this->returnType)
+			: $this->returnType;
 	}
 
 
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setReturnReference($state = true)
+	public function setReturnReference(bool $state = true): static
 	{
-		$this->returnReference = (bool) $state;
+		$this->returnReference = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function getReturnReference()
+	public function getReturnReference(): bool
 	{
 		return $this->returnReference;
 	}
 
 
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setReturnNullable($state = true)
+	public function setReturnNullable(bool $state = true): static
 	{
-		$this->returnNullable = (bool) $state;
+		$this->returnNullable = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function getReturnNullable()
+	public function isReturnNullable(): bool
 	{
 		return $this->returnNullable;
 	}
 
 
-	/**
-	 * @return static
-	 */
-	public function setNamespace(PhpNamespace $val = null)
+	/** @deprecated  use isReturnNullable() */
+	public function getReturnNullable(): bool
 	{
-		$this->namespace = $val;
-		return $this;
-	}
-
-
-	/**
-	 * @return string
-	 */
-	protected function parametersToString()
-	{
-		$params = [];
-		foreach ($this->parameters as $param) {
-			$variadic = $this->variadic && $param === end($this->parameters);
-			$hint = $param->getTypeHint();
-			$params[] = ($hint ? ($param->isNullable() ? '?' : '') . ($this->namespace ? $this->namespace->unresolveName($hint) : $hint) . ' ' : '')
-				. ($param->isReference() ? '&' : '')
-				. ($variadic ? '...' : '')
-				. '$' . $param->getName()
-				. ($param->hasDefaultValue() && !$variadic ? ' = ' . Helpers::dump($param->defaultValue) : '');
-		}
-
-		return strlen($tmp = implode(', ', $params)) > Helpers::WRAP_LENGTH && count($params) > 1
-			? "(\n\t" . implode(",\n\t", $params) . "\n)"
-			: "($tmp)";
-	}
-
-
-	/**
-	 * @return string
-	 */
-	protected function returnTypeToString()
-	{
-		return $this->returnType
-			? ': ' . ($this->returnNullable ? '?' : '') . ($this->namespace ? $this->namespace->unresolveName($this->returnType) : $this->returnType)
-			: '';
+		trigger_error(__METHOD__ . '() is deprecated, use isReturnNullable().', E_USER_DEPRECATED);
+		return $this->returnNullable;
 	}
 }

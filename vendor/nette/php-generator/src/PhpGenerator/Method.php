@@ -5,6 +5,8 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator;
 
 use Nette;
@@ -13,155 +15,92 @@ use Nette;
 /**
  * Class method.
  *
- * @property string|false $body
+ * @property-deprecated string|null $body
  */
-class Method
+final class Method
 {
 	use Nette\SmartObject;
 	use Traits\FunctionLike;
 	use Traits\NameAware;
 	use Traits\VisibilityAware;
 	use Traits\CommentAware;
+	use Traits\AttributeAware;
 
-	/** @var bool */
-	private $static = false;
-
-	/** @var bool */
-	private $final = false;
-
-	/** @var bool */
-	private $abstract = false;
+	private bool $static = false;
+	private bool $final = false;
+	private bool $abstract = false;
 
 
-	/**
-	 * @param  callable
-	 * @return static
-	 */
-	public static function from($method)
+	public static function from(string|array $method): static
 	{
-		$method = $method instanceof \ReflectionFunctionAbstract ? $method : Nette\Utils\Callback::toReflection($method);
-		if ($method instanceof \ReflectionFunction) {
-			trigger_error('For global functions or closures use Nette\PhpGenerator\GlobalFunction or Nette\PhpGenerator\Closure.', E_USER_DEPRECATED);
-			return (new Factory)->fromFunctionReflection($method);
-		}
-		return (new Factory)->fromMethodReflection($method);
+		return (new Factory)->fromMethodReflection(Nette\Utils\Callback::toReflection($method));
 	}
 
 
-	/**
-	 * @param  string
-	 */
-	public function __construct($name)
+	public function __toString(): string
 	{
-		if ($name === null) {
-			throw new Nette\DeprecatedException('For closures use Nette\PhpGenerator\Closure instead of Nette\PhpGenerator\Method.');
-		} elseif (!Helpers::isIdentifier($name)) {
-			throw new Nette\InvalidArgumentException("Value '$name' is not valid name.");
-		}
-		$this->name = $name;
+		return (new Printer)->printMethod($this);
 	}
 
 
-	/**
-	 * @return string  PHP code
-	 */
-	public function __toString()
+	public function setStatic(bool $state = true): static
 	{
-		return Helpers::formatDocComment($this->comment . "\n")
-			. ($this->abstract ? 'abstract ' : '')
-			. ($this->final ? 'final ' : '')
-			. ($this->visibility ? $this->visibility . ' ' : '')
-			. ($this->static ? 'static ' : '')
-			. 'function '
-			. ($this->returnReference ? '&' : '')
-			. $this->name
-			. ($params = $this->parametersToString())
-			. $this->returnTypeToString()
-			. ($this->abstract || $this->body === false
-				? ';'
-				: (strpos($params, "\n") === false ? "\n" : ' ')
-					. "{\n"
-					. Nette\Utils\Strings::indent(ltrim(rtrim($this->body) . "\n"), 1)
-					. '}');
-	}
-
-
-	/**
-	 * @param  string|false
-	 * @return static
-	 */
-	public function setBody($code, array $args = null)
-	{
-		$this->body = $args === null ? $code : Helpers::formatArgs($code, $args);
+		$this->static = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return string|false
-	 */
-	public function getBody()
-	{
-		return $this->body;
-	}
-
-
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setStatic($state = true)
-	{
-		$this->static = (bool) $state;
-		return $this;
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function isStatic()
+	public function isStatic(): bool
 	{
 		return $this->static;
 	}
 
 
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setFinal($state = true)
+	public function setFinal(bool $state = true): static
 	{
-		$this->final = (bool) $state;
+		$this->final = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function isFinal()
+	public function isFinal(): bool
 	{
 		return $this->final;
 	}
 
 
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setAbstract($state = true)
+	public function setAbstract(bool $state = true): static
 	{
-		$this->abstract = (bool) $state;
+		$this->abstract = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function isAbstract()
+	public function isAbstract(): bool
 	{
 		return $this->abstract;
+	}
+
+
+	/**
+	 * @param  string  $name without $
+	 */
+	public function addPromotedParameter(string $name, mixed $defaultValue = null): PromotedParameter
+	{
+		$param = new PromotedParameter($name);
+		if (func_num_args() > 1) {
+			$param->setDefaultValue($defaultValue);
+		}
+
+		return $this->parameters[$name] = $param;
+	}
+
+
+	/** @throws Nette\InvalidStateException */
+	public function validate(): void
+	{
+		if ($this->abstract && ($this->final || $this->visibility === ClassLike::VisibilityPrivate)) {
+			throw new Nette\InvalidStateException("Method $this->name() cannot be abstract and final or private at the same time.");
+		}
 	}
 }

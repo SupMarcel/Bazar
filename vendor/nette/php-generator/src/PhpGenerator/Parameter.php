@@ -5,151 +5,110 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator;
 
 use Nette;
+use Nette\Utils\Type;
 
 
 /**
- * Method parameter description.
+ * Function/Method parameter description.
+ *
+ * @property-deprecated mixed $defaultValue
  */
 class Parameter
 {
 	use Nette\SmartObject;
 	use Traits\NameAware;
+	use Traits\AttributeAware;
 
-	/** @var mixed */
-	public $defaultValue;
-
-	/** @var bool */
-	private $reference = false;
-
-	/** @var string|null */
-	private $typeHint;
-
-	/** @var bool */
-	private $nullable = false;
-
-	/** @var bool */
-	private $hasDefaultValue = false;
+	private bool $reference = false;
+	private ?string $type = null;
+	private bool $nullable = false;
+	private bool $hasDefaultValue = false;
+	private mixed $defaultValue = null;
 
 
-	/**
-	 * @deprecated
-	 * @return static
-	 */
-	public static function from(\ReflectionParameter $from)
+	public function setReference(bool $state = true): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, use Nette\PhpGenerator\Factory.', E_USER_DEPRECATED);
-		return (new Factory)->fromParameterReflection($from);
-	}
-
-
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setReference($state = true)
-	{
-		$this->reference = (bool) $state;
+		$this->reference = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function isReference()
+	public function isReference(): bool
 	{
 		return $this->reference;
 	}
 
 
-	/**
-	 * @param  string|null
-	 * @return static
-	 */
-	public function setTypeHint($hint)
+	public function setType(?string $type): static
 	{
-		$this->typeHint = $hint ? (string) $hint : null;
+		$this->type = Helpers::validateType($type, $this->nullable);
 		return $this;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
-	public function getTypeHint()
+	public function getType(bool $asObject = false): Type|string|null
 	{
-		return $this->typeHint;
+		return $asObject && $this->type
+			? Type::fromString($this->type)
+			: $this->type;
 	}
 
 
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setOptional($state = true)
+	/** @deprecated  use setType() */
+	public function setTypeHint(?string $type): static
 	{
-		$this->hasDefaultValue = (bool) $state;
+		trigger_error(__METHOD__ . '() is deprecated, use setType().', E_USER_DEPRECATED);
+		return $this->setType($type);
+	}
+
+
+	/** @deprecated  use getType() */
+	public function getTypeHint(): ?string
+	{
+		trigger_error(__METHOD__ . '() is deprecated, use getType().', E_USER_DEPRECATED);
+		return $this->getType();
+	}
+
+
+	public function setNullable(bool $state = true): static
+	{
+		$this->nullable = $state;
 		return $this;
 	}
 
 
-	/**
-	 * @deprecated  use hasDefaultValue()
-	 * @return bool
-	 */
-	public function isOptional()
-	{
-		return $this->hasDefaultValue;
-	}
-
-
-	/**
-	 * @param  bool
-	 * @return static
-	 */
-	public function setNullable($state = true)
-	{
-		$this->nullable = (bool) $state;
-		return $this;
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function isNullable()
+	public function isNullable(): bool
 	{
 		return $this->nullable;
 	}
 
 
-	/**
-	 * @return static
-	 */
-	public function setDefaultValue($val)
+	public function setDefaultValue(mixed $val): static
 	{
 		$this->defaultValue = $val;
+		$this->hasDefaultValue = true;
 		return $this;
 	}
 
 
-	/**
-	 * @return mixed
-	 */
-	public function getDefaultValue()
+	public function getDefaultValue(): mixed
 	{
 		return $this->defaultValue;
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function hasDefaultValue()
+	public function hasDefaultValue(): bool
 	{
 		return $this->hasDefaultValue;
+	}
+
+
+	public function validate(): void
+	{
 	}
 }

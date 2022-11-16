@@ -5,6 +5,8 @@
  * Copyright (c) 2008 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Latte\Loaders;
 
 use Latte;
@@ -13,15 +15,18 @@ use Latte;
 /**
  * Template loader.
  */
-class StringLoader implements Latte\ILoader
+class StringLoader implements Latte\Loader
 {
 	use Latte\Strict;
 
-	/** @var array|null [name => content] */
+	/** @var string[]|null  [name => content] */
 	private $templates;
 
 
-	public function __construct(array $templates = null)
+	/**
+	 * @param  string[]  $templates
+	 */
+	public function __construct(?array $templates = null)
 	{
 		$this->templates = $templates;
 	}
@@ -29,24 +34,20 @@ class StringLoader implements Latte\ILoader
 
 	/**
 	 * Returns template source code.
-	 * @return string
 	 */
-	public function getContent($name)
+	public function getContent($name): string
 	{
 		if ($this->templates === null) {
 			return $name;
 		} elseif (isset($this->templates[$name])) {
 			return $this->templates[$name];
 		} else {
-			throw new \RuntimeException("Missing template '$name'.");
+			throw new Latte\RuntimeException("Missing template '$name'.");
 		}
 	}
 
 
-	/**
-	 * @return bool
-	 */
-	public function isExpired($name, $time)
+	public function isExpired($name, $time): bool
 	{
 		return false;
 	}
@@ -54,22 +55,21 @@ class StringLoader implements Latte\ILoader
 
 	/**
 	 * Returns referred template name.
-	 * @return string
 	 */
-	public function getReferredName($name, $referringName)
+	public function getReferredName($name, $referringName): string
 	{
 		if ($this->templates === null) {
 			throw new \LogicException("Missing template '$name'.");
 		}
+
 		return $name;
 	}
 
 
 	/**
 	 * Returns unique identifier for caching.
-	 * @return string
 	 */
-	public function getUniqueId($name)
+	public function getUniqueId($name): string
 	{
 		return $this->getContent($name);
 	}

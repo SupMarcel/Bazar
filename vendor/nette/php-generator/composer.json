@@ -1,9 +1,9 @@
 {
 	"name": "nette/php-generator",
-	"description": "🐘 Nette PHP Generator: generates neat PHP code for you. Supports new PHP 7.1 features.",
+	"description": "🐘 Nette PHP Generator: generates neat PHP code for you. Supports new PHP 8.2 features.",
 	"keywords": ["nette", "php", "code", "scaffolding"],
 	"homepage": "https://nette.org",
-	"license": ["BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
+	"license": ["BSD-3-Clause", "GPL-2.0-only", "GPL-3.0-only"],
 	"authors": [
 		{
 			"name": "David Grudl",
@@ -15,23 +15,29 @@
 		}
 	],
 	"require": {
-		"php": ">=5.6.0",
-		"nette/utils": "^2.4.2 || ~3.0.0"
+		"php": ">=8.0 <8.3",
+		"nette/utils": "^3.2.7 || ^4.0"
 	},
 	"require-dev": {
-		"nette/tester": "^2.0",
-		"tracy/tracy": "^2.3"
+		"nette/tester": "^2.4",
+		"nikic/php-parser": "^4.15",
+		"tracy/tracy": "^2.8",
+		"phpstan/phpstan": "^1.0"
 	},
-	"conflict": {
-		"nette/nette": "<2.2"
+	"suggest": {
+		"nikic/php-parser": "to use ClassType::from(withBodies: true) & ClassType::fromCode()"
 	},
 	"autoload": {
 		"classmap": ["src/"]
 	},
 	"minimum-stability": "dev",
+	"scripts": {
+		"phpstan": "phpstan analyse",
+		"tester": "tester tests -s"
+	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "2.6-dev"
+			"dev-master": "4.0-dev"
 		}
 	}
 }

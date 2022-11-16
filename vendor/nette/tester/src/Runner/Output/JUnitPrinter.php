@@ -5,6 +5,8 @@
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Tester\Runner\Output;
 
 use Tester;
@@ -29,13 +31,13 @@ class JUnitPrinter implements Tester\Runner\OutputHandler
 	private $results;
 
 
-	public function __construct($file = 'php://output')
+	public function __construct(?string $file = null)
 	{
-		$this->file = fopen($file, 'w');
+		$this->file = fopen($file ?: 'php://output', 'w');
 	}
 
 
-	public function begin()
+	public function begin(): void
 	{
 		$this->results = [
 			Test::PASSED => 0,
@@ -47,19 +49,19 @@ class JUnitPrinter implements Tester\Runner\OutputHandler
 	}
 
 
-	public function prepare(Test $test)
+	public function prepare(Test $test): void
 	{
 	}
 
 
-	public function finish(Test $test)
+	public function finish(Test $test): void
 	{
 		$this->results[$test->getResult()]++;
 		$this->buffer .= "\t\t<testcase classname=\"" . htmlspecialchars($test->getSignature()) . '" name="' . htmlspecialchars($test->getSignature()) . '"';
 
 		switch ($test->getResult()) {
 			case Test::FAILED:
-				$this->buffer .= ">\n\t\t\t<failure message=\"" . htmlspecialchars($test->message) . "\"/>\n\t\t</testcase>\n";
+				$this->buffer .= ">\n\t\t\t<failure message=\"" . htmlspecialchars($test->message, ENT_COMPAT | ENT_HTML5) . "\"/>\n\t\t</testcase>\n";
 				break;
 			case Test::SKIPPED:
 				$this->buffer .= ">\n\t\t\t<skipped/>\n\t\t</testcase>\n";
@@ -71,7 +73,7 @@ class JUnitPrinter implements Tester\Runner\OutputHandler
 	}
 
 
-	public function end()
+	public function end(): void
 	{
 		$time = sprintf('%0.1f', microtime(true) - $this->startTime);
 		$output = $this->buffer;

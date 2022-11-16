@@ -5,10 +5,11 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator;
 
 use Nette;
-use Nette\Utils\Strings;
 
 
 /**
@@ -19,20 +20,23 @@ use Nette\Utils\Strings;
  * - doc comments
  * - one or more namespaces
  */
-class PhpFile
+final class PhpFile
 {
 	use Nette\SmartObject;
 	use Traits\CommentAware;
 
 	/** @var PhpNamespace[] */
-	private $namespaces = [];
+	private array $namespaces = [];
+	private bool $strictTypes = false;
 
 
-	/**
-	 * @param  string
-	 * @return ClassType
-	 */
-	public function addClass($name)
+	public static function fromCode(string $code): self
+	{
+		return (new Factory)->fromCode($code);
+	}
+
+
+	public function addClass(string $name): ClassType
 	{
 		return $this
 			->addNamespace(Helpers::extractNamespace($name))
@@ -40,11 +44,7 @@ class PhpFile
 	}
 
 
-	/**
-	 * @param  string
-	 * @return ClassType
-	 */
-	public function addInterface($name)
+	public function addInterface(string $name): InterfaceType
 	{
 		return $this
 			->addNamespace(Helpers::extractNamespace($name))
@@ -52,11 +52,7 @@ class PhpFile
 	}
 
 
-	/**
-	 * @param  string
-	 * @return ClassType
-	 */
-	public function addTrait($name)
+	public function addTrait(string $name): TraitType
 	{
 		return $this
 			->addNamespace(Helpers::extractNamespace($name))
@@ -64,32 +60,106 @@ class PhpFile
 	}
 
 
-	/**
-	 * @param  string null means global namespace
-	 * @return PhpNamespace
-	 */
-	public function addNamespace($name)
+	public function addEnum(string $name): EnumType
 	{
-		if (!isset($this->namespaces[$name])) {
-			$this->namespaces[$name] = new PhpNamespace($name);
+		return $this
+			->addNamespace(Helpers::extractNamespace($name))
+			->addEnum(Helpers::extractShortName($name));
+	}
+
+
+	public function addNamespace(string|PhpNamespace $namespace): PhpNamespace
+	{
+		$res = $namespace instanceof PhpNamespace
+			? ($this->namespaces[$namespace->getName()] = $namespace)
+			: ($this->namespaces[$namespace] ??= new PhpNamespace($namespace));
+
+		foreach ($this->namespaces as $namespace) {
+			$namespace->setBracketedSyntax(count($this->namespaces) > 1 && isset($this->namespaces['']));
 		}
-		return $this->namespaces[$name];
+
+		return $res;
+	}
+
+
+	public function addFunction(string $name): GlobalFunction
+	{
+		return $this
+			->addNamespace(Helpers::extractNamespace($name))
+			->addFunction(Helpers::extractShortName($name));
+	}
+
+
+	/** @return PhpNamespace[] */
+	public function getNamespaces(): array
+	{
+		return $this->namespaces;
+	}
+
+
+	/** @return ClassLike[] */
+	public function getClasses(): array
+	{
+		$classes = [];
+		foreach ($this->namespaces as $n => $namespace) {
+			$n .= $n ? '\\' : '';
+			foreach ($namespace->getClasses() as $c => $class) {
+				$classes[$n . $c] = $class;
+			}
+		}
+
+		return $classes;
+	}
+
+
+	/** @return GlobalFunction[] */
+	public function getFunctions(): array
+	{
+		$functions = [];
+		foreach ($this->namespaces as $n => $namespace) {
+			$n .= $n ? '\\' : '';
+			foreach ($namespace->getFunctions() as $f => $function) {
+				$functions[$n . $f] = $function;
+			}
+		}
+
+		return $functions;
+	}
+
+
+	public function addUse(string $name, ?string $alias = null, string $of = PhpNamespace::NameNormal): static
+	{
+		$this->addNamespace('')->addUse($name, $alias, $of);
+		return $this;
 	}
 
 
 	/**
-	 * @return string PHP code
+	 * Adds declare(strict_types=1) to output.
 	 */
-	public function __toString()
+	public function setStrictTypes(bool $on = true): static
 	{
-		foreach ($this->namespaces as $namespace) {
-			$namespace->setBracketedSyntax(count($this->namespaces) > 1 && isset($this->namespaces[null]));
-		}
+		$this->strictTypes = $on;
+		return $this;
+	}
 
-		return Strings::normalize(
-			"<?php\n"
-			. ($this->comment ? "\n" . Helpers::formatDocComment($this->comment . "\n") . "\n" : '')
-			. implode("\n\n", $this->namespaces)
-		) . "\n";
+
+	public function hasStrictTypes(): bool
+	{
+		return $this->strictTypes;
+	}
+
+
+	/** @deprecated  use hasStrictTypes() */
+	public function getStrictTypes(): bool
+	{
+		trigger_error(__METHOD__ . '() is deprecated, use hasStrictTypes().', E_USER_DEPRECATED);
+		return $this->strictTypes;
+	}
+
+
+	public function __toString(): string
+	{
+		return (new Printer)->printFile($this);
 	}
 }

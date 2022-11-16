@@ -5,6 +5,8 @@
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Tester;
 
 
@@ -13,10 +15,13 @@ namespace Tester;
  */
 class FileMock
 {
-	const PROTOCOL = 'mock';
+	private const Protocol = 'mock';
 
 	/** @var string[] */
 	public static $files = [];
+
+	/** @var resource used by PHP itself */
+	public $context;
 
 	/** @var string */
 	private $content;
@@ -40,26 +45,26 @@ class FileMock
 	/**
 	 * @return string  file name
 	 */
-	public static function create($content = '', $extension = null)
+	public static function create(string $content = '', ?string $extension = null): string
 	{
 		self::register();
 
 		static $id;
-		$name = self::PROTOCOL . '://' . (++$id) . '.' . $extension;
+		$name = self::Protocol . '://' . (++$id) . '.' . $extension;
 		self::$files[$name] = $content;
 		return $name;
 	}
 
 
-	public static function register()
+	public static function register(): void
 	{
-		if (!in_array(self::PROTOCOL, stream_get_wrappers(), true)) {
-			stream_wrapper_register(self::PROTOCOL, __CLASS__);
+		if (!in_array(self::Protocol, stream_get_wrappers(), true)) {
+			stream_wrapper_register(self::Protocol, self::class);
 		}
 	}
 
 
-	public function stream_open($path, $mode)
+	public function stream_open(string $path, string $mode): bool
 	{
 		if (!preg_match('#^([rwaxc]).*?(\+)?#', $mode, $m)) {
 			// Windows: failed to open stream: Bad file descriptor
@@ -91,10 +96,10 @@ class FileMock
 	}
 
 
-	public function stream_read($length)
+	public function stream_read(int $length)
 	{
 		if (!$this->isReadable) {
-			return '';
+			return false;
 		}
 
 		$result = substr($this->content, $this->readingPos, $length);
@@ -104,10 +109,10 @@ class FileMock
 	}
 
 
-	public function stream_write($data)
+	public function stream_write(string $data)
 	{
 		if (!$this->isWritable) {
-			return 0;
+			return false;
 		}
 
 		$length = strlen($data);
@@ -119,25 +124,26 @@ class FileMock
 	}
 
 
-	public function stream_tell()
+	public function stream_tell(): int
 	{
 		return $this->readingPos;
 	}
 
 
-	public function stream_eof()
+	public function stream_eof(): bool
 	{
 		return $this->readingPos >= strlen($this->content);
 	}
 
 
-	public function stream_seek($offset, $whence)
+	public function stream_seek(int $offset, int $whence): bool
 	{
 		if ($whence === SEEK_CUR) {
 			$offset += $this->readingPos;
 		} elseif ($whence === SEEK_END) {
 			$offset += strlen($this->content);
 		}
+
 		if ($offset >= 0) {
 			$this->readingPos = $offset;
 			$this->writingPos = $this->appendMode ? $this->writingPos : $offset;
@@ -148,7 +154,7 @@ class FileMock
 	}
 
 
-	public function stream_truncate($size)
+	public function stream_truncate(int $size): bool
 	{
 		if (!$this->isWritable) {
 			return false;
@@ -160,13 +166,19 @@ class FileMock
 	}
 
 
-	public function stream_stat()
+	public function stream_set_option(int $option, int $arg1, int $arg2): bool
+	{
+		return false;
+	}
+
+
+	public function stream_stat(): array
 	{
 		return ['mode' => 0100666, 'size' => strlen($this->content)];
 	}
 
 
-	public function url_stat($path, $flags)
+	public function url_stat(string $path, int $flags)
 	{
 		return isset(self::$files[$path])
 			? ['mode' => 0100666, 'size' => strlen(self::$files[$path])]
@@ -174,13 +186,24 @@ class FileMock
 	}
 
 
-	public function stream_lock($operation)
+	public function stream_lock(int $operation): bool
 	{
 		return false;
 	}
 
 
-	public function unlink($path)
+	public function stream_metadata(string $path, int $option, $value): bool
+	{
+		switch ($option) {
+			case STREAM_META_TOUCH:
+				return true;
+		}
+
+		return false;
+	}
+
+
+	public function unlink(string $path): bool
 	{
 		if (isset(self::$files[$path])) {
 			unset(self::$files[$path]);
@@ -192,7 +215,7 @@ class FileMock
 	}
 
 
-	private function warning($message)
+	private function warning(string $message): void
 	{
 		$bt = debug_backtrace(0, 3);
 		if (isset($bt[2]['function'])) {

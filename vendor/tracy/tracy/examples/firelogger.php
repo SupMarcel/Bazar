@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/../src/tracy.php';
 
 use Tracy\Debugger;
@@ -31,7 +33,7 @@ function third($arg1)
 
 try {
 	first(10, 'any string');
-} catch (Exception $e) {
+} catch (Throwable $e) {
 	Debugger::fireLog($e);
 }
 

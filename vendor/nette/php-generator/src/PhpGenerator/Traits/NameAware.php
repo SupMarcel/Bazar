@@ -5,6 +5,8 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator\Traits;
 
 use Nette;
@@ -15,36 +17,32 @@ use Nette;
  */
 trait NameAware
 {
-	/** @var string */
-	private $name;
+	private string $name;
 
 
-	/**
-	 * @param  string
-	 */
-	public function __construct($name)
+	public function __construct(string $name)
 	{
 		if (!Nette\PhpGenerator\Helpers::isIdentifier($name)) {
 			throw new Nette\InvalidArgumentException("Value '$name' is not valid name.");
 		}
+
 		$this->name = $name;
 	}
 
 
-	/** @deprecated */
-	public function setName($name)
+	public function getName(): string
 	{
-		trigger_error(__METHOD__ . '() is deprecated, use constructor.', E_USER_DEPRECATED);
-		$this->__construct($name);
-		return $this;
+		return $this->name;
 	}
 
 
 	/**
-	 * @return string
+	 * Returns clone with a different name.
 	 */
-	public function getName()
+	public function cloneWithName(string $name): static
 	{
-		return $this->name;
+		$dolly = clone $this;
+		$dolly->__construct($name);
+		return $dolly;
 	}
 }

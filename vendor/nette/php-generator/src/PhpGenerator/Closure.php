@@ -5,6 +5,8 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator;
 
 use Nette;
@@ -13,77 +15,49 @@ use Nette;
 /**
  * Closure.
  *
- * @property string $body
+ * @property-deprecated string $body
  */
-class Closure
+final class Closure
 {
 	use Nette\SmartObject;
 	use Traits\FunctionLike;
+	use Traits\AttributeAware;
 
 	/** @var Parameter[] */
-	private $uses = [];
+	private array $uses = [];
 
 
-	/**
-	 * @return static
-	 */
-	public static function from(\Closure $closure)
+	public static function from(\Closure $closure): self
 	{
 		return (new Factory)->fromFunctionReflection(new \ReflectionFunction($closure));
 	}
 
 
-	/**
-	 * @return string  PHP code
-	 */
-	public function __toString()
+	public function __toString(): string
 	{
-		$uses = [];
-		foreach ($this->uses as $param) {
-			$uses[] = ($param->isReference() ? '&' : '') . '$' . $param->getName();
-		}
-		$useStr = strlen($tmp = implode(', ', $uses)) > Helpers::WRAP_LENGTH && count($uses) > 1
-			? "\n\t" . implode(",\n\t", $uses) . "\n"
-			: $tmp;
-
-		return 'function '
-			. ($this->returnReference ? '&' : '')
-			. $this->parametersToString()
-			. ($this->uses ? " use ($useStr)" : '')
-			. $this->returnTypeToString()
-			. " {\n" . Nette\Utils\Strings::indent(ltrim(rtrim($this->body) . "\n"), 1) . '}';
+		return (new Printer)->printClosure($this);
 	}
 
 
 	/**
-	 * @param  Parameter[]
-	 * @return static
+	 * @param  Parameter[]  $uses
 	 */
-	public function setUses(array $uses)
+	public function setUses(array $uses): static
 	{
-		foreach ($uses as $use) {
-			if (!$use instanceof Parameter) {
-				throw new Nette\InvalidArgumentException('Argument must be Nette\PhpGenerator\Parameter[].');
-			}
-		}
+		(function (Parameter ...$uses) {})(...$uses);
 		$this->uses = $uses;
 		return $this;
 	}
 
 
-	/**
-	 * @return array
-	 */
-	public function getUses()
+	/** @return Parameter[] */
+	public function getUses(): array
 	{
 		return $this->uses;
 	}
 
 
-	/**
-	 * @return Parameter
-	 */
-	public function addUse($name)
+	public function addUse(string $name): Parameter
 	{
 		return $this->uses[] = new Parameter($name);
 	}

@@ -5,11 +5,14 @@
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Tester\Runner;
 
 use Tester\CodeCoverage;
 use Tester\Dumper;
 use Tester\Environment;
+use Tester\Helpers;
 
 
 /**
@@ -23,26 +26,31 @@ class CliTester
 	/** @var PhpInterpreter */
 	private $interpreter;
 
+	/** @var bool */
+	private $debugMode = true;
 
-	/** @return int|null */
-	public function run()
+	/** @var string|null */
+	private $stdoutFormat;
+
+
+	public function run(): ?int
 	{
 		Environment::setupColors();
-		Environment::setupErrors();
+		$this->setupErrors();
 
 		ob_start();
 		$cmd = $this->loadOptions();
 
-		Environment::$debugMode = (bool) $this->options['--debug'];
+		$this->debugMode = (bool) $this->options['--debug'];
 		if (isset($this->options['--colors'])) {
 			Environment::$useColors = (bool) $this->options['--colors'];
-		} elseif (in_array($this->options['-o'], ['tap', 'junit'], true)) {
+		} elseif (in_array($this->stdoutFormat, ['tap', 'junit'], true)) {
 			Environment::$useColors = false;
 		}
 
 		if ($cmd->isEmpty() || $this->options['--help']) {
 			$cmd->help();
-			return;
+			return null;
 		}
 
 		$this->createPhpInterpreter();
@@ -51,33 +59,33 @@ class CliTester
 			$job = new Job(new Test(__DIR__ . '/info.php'), $this->interpreter);
 			$job->run();
 			echo $job->getTest()->stdout;
-			return;
-		}
-
-		if ($this->options['--coverage']) {
-			$coverageFile = $this->prepareCodeCoverage();
+			return null;
 		}
 
 		$runner = $this->createRunner();
-		$runner->setEnvironmentVariable(Environment::RUNNER, 1);
-		$runner->setEnvironmentVariable(Environment::COLORS, (int) Environment::$useColors);
-		if (isset($coverageFile)) {
-			$runner->setEnvironmentVariable(Environment::COVERAGE, $coverageFile);
+		$runner->setEnvironmentVariable(Environment::RUNNER, '1');
+		$runner->setEnvironmentVariable(Environment::COLORS, (string) (int) Environment::$useColors);
+
+		$this->installInterruptHandler();
+
+		if ($this->options['--coverage']) {
+			$coverageFile = $this->prepareCodeCoverage($runner);
 		}
 
-		if ($this->options['-o'] !== null) {
+		if ($this->stdoutFormat !== null) {
 			ob_clean();
 		}
+
 		ob_end_flush();
 
 		if ($this->options['--watch']) {
 			$this->watch($runner);
-			return;
+			return null;
 		}
 
 		$result = $runner->run();
 
-		if (isset($coverageFile) && preg_match('#\.(?:html?|xml)\z#', $coverageFile)) {
+		if (isset($coverageFile) && preg_match('#\.(?:html?|xml)$#D', $coverageFile)) {
 			$this->finishCodeCoverage($coverageFile);
 		}
 
@@ -85,31 +93,32 @@ class CliTester
 	}
 
 
-	/** @return CommandLine */
-	private function loadOptions()
+	private function loadOptions(): CommandLine
 	{
+		$outputFiles = [];
+
 		echo <<<'XX'
  _____ ___  ___ _____ ___  ___
 |_   _/ __)( __/_   _/ __)| _ )
-  |_| \___ /___) |_| \___ |_|_\  v2.0.2
+  |_| \___ /___) |_| \___ |_|_\  v2.4.3
 
 
 XX;
 
 		$cmd = new CommandLine(<<<'XX'
 Usage:
-    tester.php [options] [<test file> | <directory>]...
+    tester [options] [<test file> | <directory>]...
 
 Options:
     -p <path>                    Specify PHP interpreter to run (default: php).
     -c <path>                    Look for php.ini file (or look in directory) <path>.
     -C                           Use system-wide php.ini.
-    -l | --log <path>            Write log to file <path>.
     -d <key=value>...            Define INI entry 'key' with value 'value'.
     -s                           Show information about skipped tests.
     --stop-on-fail               Stop execution upon the first failure.
     -j <num>                     Run <num> jobs in parallel (default: 8).
-    -o <console|tap|junit|none>  Specify output format.
+    -o <console|tap|junit|log|none>  (e.g. -o junit:output.xml)
+                                 Specify one or more output formats with optional file name.
     -w | --watch <path>          Watch directory.
     -i | --info                  Show tests environment info and exit.
     --setup <path>               Script for runner setup.
@@ -121,27 +130,45 @@ Options:
 
 XX
 		, [
-			'-c' => [CommandLine::REALPATH => true],
-			'--watch' => [CommandLine::REPEATABLE => true, CommandLine::REALPATH => true],
-			'--setup' => [CommandLine::REALPATH => true],
-			'--temp' => [CommandLine::REALPATH => true],
-			'paths' => [CommandLine::REPEATABLE => true, CommandLine::VALUE => getcwd()],
+			'-c' => [CommandLine::Realpath => true],
+			'--watch' => [CommandLine::Repeatable => true, CommandLine::Realpath => true],
+			'--setup' => [CommandLine::Realpath => true],
+			'--temp' => [CommandLine::Realpath => true],
+			'paths' => [CommandLine::Repeatable => true, CommandLine::Value => getcwd()],
 			'--debug' => [],
-			'--coverage-src' => [CommandLine::REALPATH => true],
+			'--cider' => [],
+			'--coverage-src' => [CommandLine::Realpath => true, CommandLine::Repeatable => true],
+			'-o' => [CommandLine::Repeatable => true, CommandLine::Normalizer => function ($arg) use (&$outputFiles) {
+				[$format, $file] = explode(':', $arg, 2) + [1 => null];
+
+				if (isset($outputFiles[$file])) {
+					throw new \Exception(
+						$file === null
+							? 'Option -o <format> without file name parameter can be used only once.'
+							: "Cannot specify output by -o into file '$file' more then once."
+					);
+				} elseif ($file === null) {
+					$this->stdoutFormat = $format;
+				}
+
+				$outputFiles[$file] = true;
+
+				return [$format, $file];
+			}],
 		]);
 
 		if (isset($_SERVER['argv'])) {
-			if ($tmp = array_search('-log', $_SERVER['argv'], true)) {
-				$_SERVER['argv'][$tmp] = '--log';
+			if (($tmp = array_search('-l', $_SERVER['argv'], true))
+				|| ($tmp = array_search('-log', $_SERVER['argv'], true))
+				|| ($tmp = array_search('--log', $_SERVER['argv'], true))
+			) {
+				$_SERVER['argv'][$tmp] = '-o';
+				$_SERVER['argv'][$tmp + 1] = 'log:' . $_SERVER['argv'][$tmp + 1];
 			}
 
 			if ($tmp = array_search('--tap', $_SERVER['argv'], true)) {
 				unset($_SERVER['argv'][$tmp]);
 				$_SERVER['argv'] = array_merge($_SERVER['argv'], ['-o', 'tap']);
-			}
-
-			if (array_search('-p', $_SERVER['argv'], true) === false) {
-				echo "Note: Default interpreter is CLI since Tester v2.0. It used to be CGI.\n";
 			}
 		}
 
@@ -160,8 +187,7 @@ XX
 	}
 
 
-	/** @return void */
-	private function createPhpInterpreter()
+	private function createPhpInterpreter(): void
 	{
 		$args = $this->options['-C'] ? [] : ['-n'];
 		if ($this->options['-c']) {
@@ -170,7 +196,7 @@ XX
 			echo "Note: No php.ini is used.\n";
 		}
 
-		if (in_array($this->options['-o'], ['tap', 'junit'], true)) {
+		if (in_array($this->stdoutFormat, ['tap', 'junit'], true)) {
 			array_push($args, '-d', 'html_errors=off');
 		}
 
@@ -186,8 +212,7 @@ XX
 	}
 
 
-	/** @return Runner */
-	private function createRunner()
+	private function createRunner(): Runner
 	{
 		$runner = new Runner($this->interpreter);
 		$runner->paths = $this->options['paths'];
@@ -198,65 +223,100 @@ XX
 			$runner->setTempDirectory($this->options['--temp']);
 		}
 
-		if ($this->options['-o'] !== 'none') {
-			switch ($this->options['-o']) {
+		if ($this->stdoutFormat === null) {
+			$runner->outputHandlers[] = new Output\ConsolePrinter(
+				$runner,
+				(bool) $this->options['-s'],
+				'php://output',
+				(bool) $this->options['--cider']
+			);
+		}
+
+		foreach ($this->options['-o'] as $output) {
+			[$format, $file] = $output;
+			switch ($format) {
+				case 'console':
+					$runner->outputHandlers[] = new Output\ConsolePrinter($runner, (bool) $this->options['-s'], $file, (bool) $this->options['--cider']);
+					break;
+
 				case 'tap':
-					$runner->outputHandlers[] = new Output\TapPrinter;
+					$runner->outputHandlers[] = new Output\TapPrinter($file);
 					break;
+
 				case 'junit':
-					$runner->outputHandlers[] = new Output\JUnitPrinter;
+					$runner->outputHandlers[] = new Output\JUnitPrinter($file);
 					break;
+
+				case 'log':
+					$runner->outputHandlers[] = new Output\Logger($runner, $file);
+					break;
+
+				case 'none':
+					break;
+
 				default:
-					$runner->outputHandlers[] = new Output\ConsolePrinter($runner, (bool) $this->options['-s']);
+					throw new \LogicException("Undefined output printer '$format'.'");
 			}
 		}
 
-		if ($this->options['--log']) {
-			echo "Log: {$this->options['--log']}\n";
-			$runner->outputHandlers[] = new Output\Logger($runner, $this->options['--log']);
+		if ($this->options['--setup']) {
+			(function () use ($runner): void {
+				require func_get_arg(0);
+			})($this->options['--setup']);
 		}
 
-		if ($this->options['--setup']) {
-			call_user_func(function () use ($runner) {
-				require func_get_arg(0);
-			}, $this->options['--setup']);
-		}
 		return $runner;
 	}
 
 
-	/** @return string */
-	private function prepareCodeCoverage()
+	private function prepareCodeCoverage(Runner $runner): string
 	{
-		if (!$this->interpreter->canMeasureCodeCoverage()) {
-			$alternative = PHP_VERSION_ID >= 70000 ? ' or phpdbg SAPI' : '';
-			throw new \Exception("Code coverage functionality requires Xdebug extension$alternative (used {$this->interpreter->getCommandLine()})");
+		$engines = $this->interpreter->getCodeCoverageEngines();
+		if (count($engines) < 1) {
+			throw new \Exception("Code coverage functionality requires Xdebug or PCOV extension or PHPDBG SAPI (used {$this->interpreter->getCommandLine()})");
 		}
+
 		file_put_contents($this->options['--coverage'], '');
 		$file = realpath($this->options['--coverage']);
-		echo "Code coverage: {$file}\n";
+
+		[$engine, $version] = reset($engines);
+
+		$runner->setEnvironmentVariable(Environment::COVERAGE, $file);
+		$runner->setEnvironmentVariable(Environment::COVERAGE_ENGINE, $engine);
+
+		if ($engine === CodeCoverage\Collector::ENGINE_XDEBUG && version_compare($version, '3.0.0', '>=')) {
+			$runner->addPhpIniOption('xdebug.mode', ltrim(ini_get('xdebug.mode') . ',coverage', ','));
+		}
+
+		if ($engine === CodeCoverage\Collector::ENGINE_PCOV && count($this->options['--coverage-src'])) {
+			$runner->addPhpIniOption('pcov.directory', Helpers::findCommonDirectory($this->options['--coverage-src']));
+		}
+
+		echo "Code coverage by $engine: $file\n";
 		return $file;
 	}
 
 
-	/** @return void */
-	private function finishCodeCoverage($file)
+	private function finishCodeCoverage(string $file): void
 	{
-		if (!in_array($this->options['-o'], ['none', 'tap', 'junit'], true)) {
+		if (!in_array($this->stdoutFormat, ['none', 'tap', 'junit'], true)) {
 			echo 'Generating code coverage report... ';
 		}
-		if (pathinfo($file, PATHINFO_EXTENSION) === 'xml') {
-			$generator = new CodeCoverage\Generators\CloverXMLGenerator($file, $this->options['--coverage-src']);
-		} else {
-			$generator = new CodeCoverage\Generators\HtmlGenerator($file, $this->options['--coverage-src']);
+
+		if (filesize($file) === 0) {
+			echo 'failed. Coverage file is empty. Do you call Tester\Environment::setup() in tests?' . "\n";
+			return;
 		}
+
+		$generator = pathinfo($file, PATHINFO_EXTENSION) === 'xml'
+			? new CodeCoverage\Generators\CloverXMLGenerator($file, $this->options['--coverage-src'])
+			: new CodeCoverage\Generators\HtmlGenerator($file, $this->options['--coverage-src']);
 		$generator->render($file);
 		echo round($generator->getCoveredPercent()) . "% covered\n";
 	}
 
 
-	/** @return void */
-	private function watch(Runner $runner)
+	private function watch(Runner $runner): void
 	{
 		$prev = [];
 		$counter = 0;
@@ -265,16 +325,84 @@ XX
 			foreach ($this->options['--watch'] as $directory) {
 				foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory)) as $file) {
 					if (substr($file->getExtension(), 0, 3) === 'php' && substr($file->getBasename(), 0, 1) !== '.') {
-						$state[(string) $file] = md5_file((string) $file);
+						$state[(string) $file] = @filemtime((string) $file); // @ file could be deleted in the meantime
 					}
 				}
 			}
+
 			if ($state !== $prev) {
 				$prev = $state;
-				$runner->run();
+				try {
+					$runner->run();
+				} catch (\ErrorException $e) {
+					$this->displayException($e);
+				}
+
+				echo "\n";
+				$time = time();
 			}
-			echo 'Watching ' . implode(', ', $this->options['--watch']) . ' ' . str_repeat('.', ++$counter % 5) . "    \r";
+
+			$idle = time() - $time;
+			if ($idle >= 60 * 60) {
+				$idle = 'long time';
+			} elseif ($idle >= 60) {
+				$idle = round($idle / 60) . ' min';
+			} else {
+				$idle .= ' sec';
+			}
+
+			echo 'Watching ' . implode(', ', $this->options['--watch']) . " (idle for $idle) " . str_repeat('.', ++$counter % 5) . "    \r";
 			sleep(2);
+		}
+	}
+
+
+	private function setupErrors(): void
+	{
+		error_reporting(E_ALL);
+		ini_set('html_errors', '0');
+
+		set_error_handler(function (int $severity, string $message, string $file, int $line) {
+			if (($severity & error_reporting()) === $severity) {
+				throw new \ErrorException($message, 0, $severity, $file, $line);
+			}
+
+			return false;
+		});
+
+		set_exception_handler(function (\Throwable $e) {
+			if (!$e instanceof InterruptException) {
+				$this->displayException($e);
+			}
+
+			exit(2);
+		});
+	}
+
+
+	private function displayException(\Throwable $e): void
+	{
+		echo "\n";
+		echo $this->debugMode
+			? Dumper::dumpException($e)
+			: Dumper::color('white/red', 'Error: ' . $e->getMessage());
+		echo "\n";
+	}
+
+
+	private function installInterruptHandler(): void
+	{
+		if (function_exists('pcntl_signal')) {
+			pcntl_signal(SIGINT, function (): void {
+				pcntl_signal(SIGINT, SIG_DFL);
+				throw new InterruptException;
+			});
+			pcntl_async_signals(true);
+
+		} elseif (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
+			sapi_windows_set_ctrl_handler(function (): void {
+				throw new InterruptException;
+			});
 		}
 	}
 }

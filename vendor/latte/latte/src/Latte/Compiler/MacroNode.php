@@ -5,6 +5,8 @@
  * Copyright (c) 2008 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Latte;
 
 
@@ -15,11 +17,12 @@ class MacroNode
 {
 	use Strict;
 
-	const PREFIX_INNER = 'inner',
+	public const
+		PREFIX_INNER = 'inner',
 		PREFIX_TAG = 'tag',
 		PREFIX_NONE = 'none';
 
-	/** @var IMacro */
+	/** @var Macro */
 	public $macro;
 
 	/** @var string */
@@ -27,9 +30,6 @@ class MacroNode
 
 	/** @var bool */
 	public $empty = false;
-
-	/** @deprecated */
-	public $isEmpty;
 
 	/** @var string  raw arguments */
 	public $args;
@@ -46,7 +46,7 @@ class MacroNode
 	/** @var MacroTokens */
 	public $tokenizer;
 
-	/** @var MacroNode */
+	/** @var MacroNode|null */
 	public $parentNode;
 
 	/** @var string */
@@ -67,13 +67,13 @@ class MacroNode
 	/** @var \stdClass  user data */
 	public $data;
 
-	/** @var HtmlNode  closest HTML node */
+	/** @var HtmlNode|null  closest HTML node */
 	public $htmlNode;
 
-	/** @var array [contentType, context] */
+	/** @var array{string, mixed} [contentType, context] */
 	public $context;
 
-	/** @var string  indicates n:attribute macro and type of prefix (PREFIX_INNER, PREFIX_TAG, PREFIX_NONE) */
+	/** @var string|null  indicates n:attribute macro and type of prefix (PREFIX_INNER, PREFIX_TAG, PREFIX_NONE) */
 	public $prefix;
 
 	/** @var int  position of start tag in source template */
@@ -82,35 +82,81 @@ class MacroNode
 	/** @var int  position of end tag in source template */
 	public $endLine;
 
-	/** @internal */
+	/** @var array{string, bool}|null */
 	public $saved;
 
 
-	public function __construct(IMacro $macro, $name, $args = null, $modifiers = null, self $parentNode = null, HtmlNode $htmlNode = null, $prefix = null)
-	{
+	public function __construct(
+		Macro $macro,
+		string $name,
+		string $args = '',
+		string $modifiers = '',
+		?self $parentNode = null,
+		?HtmlNode $htmlNode = null,
+		?string $prefix = null
+	) {
 		$this->macro = $macro;
-		$this->name = (string) $name;
-		$this->modifiers = (string) $modifiers;
+		$this->name = $name;
+		$this->modifiers = $modifiers;
 		$this->parentNode = $parentNode;
 		$this->htmlNode = $htmlNode;
 		$this->prefix = $prefix;
 		$this->data = new \stdClass;
-		$this->isEmpty = &$this->empty;
 		$this->setArgs($args);
 	}
 
 
-	public function setArgs($args)
+	public function setArgs(string $args): void
 	{
-		$this->args = (string) $args;
-		$this->tokenizer = new MacroTokens($this->args);
+		$this->args = $args;
+		$this->tokenizer = new MacroTokens($args);
 	}
 
 
-	public function getNotation()
+	public function getNotation(): string
 	{
 		return $this->prefix
 			? Parser::N_PREFIX . ($this->prefix === self::PREFIX_NONE ? '' : $this->prefix . '-') . $this->name
 			: '{' . $this->name . '}';
+	}
+
+
+	/**
+	 * @param  string[]  $names
+	 */
+	public function closest(array $names, ?callable $condition = null): ?self
+	{
+		$node = $this->parentNode;
+		while ($node && (
+			!in_array($node->name, $names, true)
+			|| ($condition && !$condition($node))
+		)) {
+			$node = $node->parentNode;
+		}
+
+		return $node;
+	}
+
+
+	/**
+	 * @param  string|bool|null  $arguments
+	 * @param  string[]  $parents
+	 * @throws CompileException
+	 */
+	public function validate($arguments, array $parents = [], bool $modifiers = false): void
+	{
+		if ($parents && (!$this->parentNode || !in_array($this->parentNode->name, $parents, true))) {
+			throw new CompileException('Tag ' . $this->getNotation() . ' is unexpected here.');
+
+		} elseif ($this->modifiers !== '' && !$modifiers) {
+			throw new CompileException('Filters are not allowed in ' . $this->getNotation());
+
+		} elseif ($arguments && $this->args === '') {
+			$label = is_string($arguments) ? $arguments : 'arguments';
+			throw new CompileException('Missing ' . $label . ' in ' . $this->getNotation());
+
+		} elseif ($arguments === false && $this->args !== '') {
+			throw new CompileException('Arguments are not allowed in ' . $this->getNotation());
+		}
 	}
 }

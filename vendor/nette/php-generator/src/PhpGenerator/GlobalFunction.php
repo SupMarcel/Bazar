@@ -5,6 +5,8 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
+declare(strict_types=1);
+
 namespace Nette\PhpGenerator;
 
 use Nette;
@@ -13,36 +15,32 @@ use Nette;
 /**
  * Global function.
  *
- * @property string $body
+ * @property-deprecated string $body
  */
-class GlobalFunction
+final class GlobalFunction
 {
 	use Nette\SmartObject;
 	use Traits\FunctionLike;
 	use Traits\NameAware;
 	use Traits\CommentAware;
+	use Traits\AttributeAware;
 
-	/**
-	 * @param  string
-	 * @return static
-	 */
-	public static function from($function)
+	public static function from(string $function, bool $withBody = false): self
 	{
-		return (new Factory)->fromFunctionReflection(new \ReflectionFunction($function));
+		return (new Factory)->fromFunctionReflection(new \ReflectionFunction($function), $withBody);
 	}
 
 
-	/**
-	 * @return string  PHP code
-	 */
-	public function __toString()
+	/** @deprecated  use GlobalFunction::from(..., withBody: true) */
+	public static function withBodyFrom(string $function): self
 	{
-		return Helpers::formatDocComment($this->comment . "\n")
-			. 'function '
-			. ($this->returnReference ? '&' : '')
-			. $this->name
-			. $this->parametersToString()
-			. $this->returnTypeToString()
-			. "\n{\n" . Nette\Utils\Strings::indent(ltrim(rtrim($this->body) . "\n"), 1) . '}';
+		trigger_error(__METHOD__ . '() is deprecated, use GlobalFunction::from(..., withBody: true)', E_USER_DEPRECATED);
+		return (new Factory)->fromFunctionReflection(new \ReflectionFunction($function), withBody: true);
+	}
+
+
+	public function __toString(): string
+	{
+		return (new Printer)->printFunction($this);
 	}
 }
