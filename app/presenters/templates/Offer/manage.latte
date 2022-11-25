@@ -22,7 +22,7 @@
             }
             $.nette.ajax({
                 type: 'POST',
-                url: {plink uploadPhotosInsertForm!},
+                url: {plink uploadPhotos!},
                 data: formdata,
                 contentType: false,
                 processData: false
@@ -111,14 +111,14 @@
             {foreach $imagesForUpload as $imageForUpload}
                 {if $temp == 0}
                     <div class="border border-dark">
-                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload}"><br/>
-                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload})">Odstranit</span><br/>
+                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload['filename']}"><br/>
+                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload['filename']})">Odstranit</span><br/>
                         <span>Hlavní fotografie</span>
                     </div>
                 {else}
                     <div>
-                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload}"><br/>
-                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload})">Odstranit</span>
+                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload['filename']}"><br/>
+                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload['filename']})">Odstranit</span>
                     </div>
                 {/if}
                 {php $temp++}
@@ -131,7 +131,7 @@
 {foreach $offers as $offer}
     <div class="w-100 border border-dark d-flex flex-wrap align-items-center">
         <strong class="w-25">{$offer[$title]}</strong>
-        <img class="mx-3" width="80" src="{$basePath}/images/offers/{$offer[$image]}">
+        <img class="mx-3" width="80" src="{$basePath}/images/offers/{$offer->fotografie->cesta}">
         {$offer[$price]} Kč
         <span class="ml-3 w-25">{$offer[$description] |first50}</span>
         <a class="btn btn-primary ml-auto" n:href="Offer:edit $offer[$offerID]">Upravit</a>

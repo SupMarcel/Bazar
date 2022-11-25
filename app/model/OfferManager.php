@@ -39,7 +39,7 @@ class OfferManager extends BaseManager
     /** @var  Sender */
     private $sender;
 
-    public function __construct(Nette\Database\Context $database, CategoryManager $categoryManager,
+    public function __construct(Nette\Database\Explorer $database, CategoryManager $categoryManager,
                                 UserManager $userManager,
         CommentManager $commentManager, PhotoManager $photoManager, Sender $sender)
     {
@@ -86,7 +86,7 @@ class OfferManager extends BaseManager
             $message = new Message;
             $subject = $edit === true ? "Editace Vaší položky ve vašem účtu Bubovický bazar" :
                 "Přidání nové položky ve vašem účtu Bubovický bazar";
-            $message->setFrom("supdaniel@seznam.cz")
+            $message->setFrom("order@localhost.cz")
                 ->setSubject($subject)
                 ->addTo($user[UserManager::COLUMN_EMAIL])
                 ->setHtmlBody($template);

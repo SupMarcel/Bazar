@@ -18,9 +18,5 @@ class CityManager extends BaseManager
         COLUMN_ID = 'id',
         COLUMN_TITLE = 'nazev',
         COLUMN_REGION = 'okres';
-
-    public function __construct(Nette\Database\Context $database)
-    {
-        parent::__construct($database);
-    }
+   
 }

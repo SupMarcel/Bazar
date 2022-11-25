@@ -9,7 +9,7 @@
 namespace App\Model;
 
 use Nette;
-
+use Nette\Database\Explorer;
 
 class BaseManager
 {
@@ -22,11 +22,11 @@ class BaseManager
 		PAGE_SIZE = 20;
 
 
-    /** @var Nette\Database\Context */
+    /** @var Nette\Database\Explorer */
     protected $database;
 
 
-    public function __construct(Nette\Database\Context $database)
+    public function __construct(Explorer $database)
     {
         $this->database = $database;
     }
@@ -43,4 +43,10 @@ class BaseManager
         $this->database->table(static::TABLE_NAME)->where(static::COLUMN_ID, $id)->delete();
     }
 
+    public function getNextId() {
+        $count = $this->database->table(static::TABLE_NAME)->count(static::COLUMN_ID);
+        $maxID = $this->database->table(static::TABLE_NAME)->max(static::COLUMN_ID);
+        $nextId = $count == 0 ? 1 : $maxID + 1;
+        return $nextId;
+    }   
 }

@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '604def19c58df3afd96d94b14ca8a5be649ef116',
+        'reference' => 'ffbac5febea0b9720ca0dca6e64c016700f1bdf9',
         'name' => 'nette/sandbox',
         'dev' => true,
     ),
@@ -151,7 +151,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '604def19c58df3afd96d94b14ca8a5be649ef116',
+            'reference' => 'ffbac5febea0b9720ca0dca6e64c016700f1bdf9',
             'dev_requirement' => false,
         ),
         'nette/schema' => array(

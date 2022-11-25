@@ -20,7 +20,7 @@ class CategoryManager extends BaseManager
         COLUMN_PARENT_CATEGORY='nadrazenaKategorie',
         COLUMN_IMAGE = 'obrazek';
 
-    public function __construct(Nette\Database\Context $database)
+    public function __construct(Nette\Database\Explorer $database)
     {
         parent::__construct($database);
     }

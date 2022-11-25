@@ -121,34 +121,27 @@ class OfferPresenter extends BasePresenter
             if(count($photos) == 0){
                 $form->addError("Prosím nahrajte alespoň jednu fotografii.");
             } else {
-				$mainPhotoTitle = null;
-				foreach($photos as $photoFilename){
-                    if(empty($mainPhotoTitle)){
-						$mainPhotoTitle = $photoFilename;
-						break;
-					}
-                }
                 $allValues = [
                     OfferManager::COLUMN_TITLE => $values["title"],
                     OfferManager::COLUMN_PRICE => $values["price"],
                     OfferManager::COLUMN_DESCRIPTION => $values["description"],
                     OfferManager::COLUMN_CATEGORY => $values["category"],
-                    OfferManager::COLUMN_MAIN_PHOTO => $mainPhotoTitle,
-                    OfferManager::COLUMN_USER => $this->getUser()->id
+                    OfferManager::COLUMN_USER => $this->getUser()->id,
+                    OfferManager::COLUMN_MAIN_PHOTO => $_SESSION['MainPhotoID']
                 ];
                 $row = $this->offerManager->addOffer($allValues);
                 $offerID = $row[OfferManager::COLUMN_ID];
-                foreach($photos as $photoFilename){
-                    $photoValues = [PhotoManager::COLUMN_PATH => $photoFilename,
-                        PhotoManager::COLUMN_OFFER => $offerID];
-                    $this->photoManager->addPhoto($photoValues);
+                foreach ($photos as $photo) {
+                    $this->photoManager->editPhoto($photo['id'], [PhotoManager::COLUMN_OFFER => $offerID]);
                 }
                 $_SESSION["fileArray"] = [];
-                $this->redirect(303, "Offer:manage");
+                $this->redirect("Offer:manage");
             }
         };
         return $form;
     }
+    
+    
 
 
     public function createComponentEditForm(){
@@ -257,19 +250,30 @@ class OfferPresenter extends BasePresenter
         }
     }
 
-    public function handleUploadPhotosInsertForm(){
+    public function handleUploadPhotos(){
         if($this->isAjax()){
+             $offerID = isset($_POST["offerID"]) ? intval($_POST["offerID"]) : null;
+             
             $countFiles = intval($_POST["countFiles"]);
             for($i = 0; $i < $countFiles; $i++){
                 $tmpName = $_FILES["image".$i]["tmp_name"];
                 $fileName = $_FILES["image".$i]["name"];
-                $path = __DIR__."/../../www/images/offers/".$fileName;
-                while(file_exists($path)){
-                    $fileName = "0".$fileName;
-                    $path = __DIR__."/../../www/images/offers/".$fileName;
+                $formatName = explode('.', $fileName);
+                $index = count($formatName)-1;
+                $extension = $formatName[$index];
+                $indexName = $this->photoManager->getNextId();
+                $resultName = $indexName.".".$extension;
+                $path = __DIR__."/../../www/images/offers/".$resultName;
+                $photoId = $this->photoManager->addPhoto([
+                    PhotoManager::COLUMN_PATH => $resultName,
+                    PhotoManager::COLUMN_OFFER => $offerID
+                ]);
+                
+                if ($i == 0){
+                    $_SESSION['MainPhotoID'] = $photoId;
                 }
                 move_uploaded_file($tmpName, $path);
-                array_push($_SESSION["fileArray"], $fileName);
+                array_push($_SESSION["fileArray"], ['id' => $photoId, 'filename' => $resultName]);
             }
             $this->redrawControl("photos");
         }
@@ -281,7 +285,14 @@ class OfferPresenter extends BasePresenter
             if(file_exists(__DIR__."/../../www/images/offers/".$fileName)){
                 unlink(__DIR__."/../../www/images/offers/".$fileName);
             }
-            $key = array_search($fileName, $_SESSION["fileArray"]);
+            
+            $key = false;
+            foreach($_SESSION["fileArray"] as $id => $file) {
+                if ($file['filename'] == $fileName) {
+                    $key = $id;
+                    break;
+                }
+            }
             if( $key !== false ) {
                 unset( $_SESSION["fileArray"][ $key ] );
             }
@@ -289,26 +300,6 @@ class OfferPresenter extends BasePresenter
         }
     }
 
-    public function handleUploadfiles(){
-        if($this->isAjax()){
-            $offerID = intval($_POST["offerID"]);
-            $countFiles = intval($_POST["countFiles"]);
-            for($i = 0; $i < $countFiles; $i++){
-                $fileName = $_FILES["image".$i]["name"];
-                $tmpName = $_FILES["image".$i]["tmp_name"];
-                $path = __DIR__."/../../www/images/offers/".$fileName;
-                while(file_exists($path)){
-                    $fileName = "0".$fileName;
-                    $path = __DIR__."/../../www/images/offers/".$fileName;
-                }
-                $photoArray = [PhotoManager::COLUMN_OFFER => $offerID,
-                        PhotoManager::COLUMN_PATH => $fileName];
-                $this->photoManager->addPhoto($photoArray);
-                move_uploaded_file($tmpName, $path);
-            }
-            $this->redrawControl("allPhotos");
-        }
-    }
 
     public function renderAdd(){
         if(!isset($_SESSION["fileArray"])){
@@ -399,7 +390,8 @@ class OfferPresenter extends BasePresenter
         $this->template->photoID = PhotoManager::COLUMN_ID;
         $this->template->photoPath = PhotoManager::COLUMN_PATH;
         $this->template->moreThanOnePhoto = $this->photoManager->getCountPhotosByOffer(intval($id)) > 1;
-        $this->template->mainPhoto = $this->offerManager->get(intval($id))[OfferManager::COLUMN_MAIN_PHOTO];
+        $idPhoto= $this->offerManager->get(intval($id))[OfferManager::COLUMN_MAIN_PHOTO];
+        $this->template->mainPhoto = $this->photoManager->get($idPhoto)->cesta;
     }
 
     public function renderManage(){

@@ -19,10 +19,7 @@ class ReportManager extends BaseManager
         COLUMN_OFFER = 'nabidka',
         COLUMN_REASON = 'duvod';
 
-    public function __construct(Nette\Database\Context $database)
-    {
-        parent::__construct($database);
-    }
+   
 
     public function addReport($properties){
         $this->database->table(self::TABLE_NAME)->insert([

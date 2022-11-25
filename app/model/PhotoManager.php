@@ -20,10 +20,7 @@ class PhotoManager extends BaseManager
         COLUMN_OFFER = 'nabidka';
 
 
-    public function __construct(Nette\Database\Context $database)
-    {
-        parent::__construct($database);
-    }
+    
 
 
     public function getPhotosByOffer($offer){
@@ -59,17 +56,22 @@ class PhotoManager extends BaseManager
     }
 
     public function addPhoto($properties){
-        $count = $this->database->table(self::TABLE_NAME)->count(self::COLUMN_ID);
-        $maxID = $this->database->table(self::TABLE_NAME)->max(self::COLUMN_ID);
-        $max = $count == 0 ? 1 : $maxID + 1;
-        $this->database->table(self::TABLE_NAME)->insert([
-            self::COLUMN_ID => $max,
+       
+        $row = $this->database->table(self::TABLE_NAME)->insert([
+            self::COLUMN_ID => $this->getNextId(),
             self::COLUMN_PATH => $properties[self::COLUMN_PATH],
-            self::COLUMN_OFFER => $properties[self::COLUMN_OFFER]
+            self::COLUMN_OFFER => $properties[self::COLUMN_OFFER]   
         ]);
+        return $row->id;
     }
 
-
+    public function editPhoto($id,$properties) {
+        $row = $this->get($id);
+        if ($row){
+            $row->update([self::COLUMN_OFFER => $properties[self::COLUMN_OFFER]]);
+        }
+    }
+    
     public function changeMainPhoto($offerID, $newPhoto){
         $minPhotoID = $this->database->table(self::TABLE_NAME)->
         where(self::COLUMN_OFFER, $offerID)->min(self::COLUMN_ID);

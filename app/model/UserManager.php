@@ -4,6 +4,7 @@ namespace App\Model;
 
 use Nette;
 use Nette\Security\Passwords;
+use Nette\Database\Explorer;
 
 
 /**
@@ -30,13 +31,20 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
         COLUMN_SEX = 'pohlavi',
         COLUMN_ICON = 'ikona',
         COLUMN_EMAIL_SUBSCRIPTION = 'odberEmailu';
+        
+         /** @var Passwords */
+    private Passwords $passwords;
 
 
-
-	public function __construct(Nette\Database\Context $database)
-	{
+    public function __construct(Explorer $database, Passwords $passwords)
+    {
         parent::__construct($database);
-	}
+        $this->passwords = $passwords;
+    }
+
+
+
+	
 
     /**
 	 * Performs an authentication.
@@ -54,12 +62,12 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 		if (!$row) {
 			throw new Nette\Security\AuthenticationException('The username is incorrect.', self::IDENTITY_NOT_FOUND);
 
-		} elseif (!Passwords::verify($password, $row[self::COLUMN_PASSWORD_HASH])) {
+		} elseif (!$this->passwords->verify($password, $row[self::COLUMN_PASSWORD_HASH])) {
 			throw new Nette\Security\AuthenticationException('The password is incorrect.', self::INVALID_CREDENTIAL);
 
-		} elseif (Passwords::needsRehash($row[self::COLUMN_PASSWORD_HASH])) {
+		} elseif ($this->passwords->needsRehash($row[self::COLUMN_PASSWORD_HASH])) {
 			$row->update([
-				self::COLUMN_PASSWORD_HASH => Passwords::hash($password),
+				self::COLUMN_PASSWORD_HASH =>$this->passwords->hash($password),
 			]);
 		}
 
@@ -80,7 +88,7 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 		try {
                     $this->database->table(self::TABLE_NAME)->insert([
                         self::COLUMN_NAME => $properties[self::COLUMN_NAME],
-                        self::COLUMN_PASSWORD_HASH => Passwords::hash($properties["heslo"]),
+                        self::COLUMN_PASSWORD_HASH => $this->passwords->hash($properties["heslo"]),
                         self::COLUMN_EMAIL => $properties[self::COLUMN_EMAIL],
                         self::COLUMN_PHONE => $properties[self::COLUMN_PHONE],
                         self::COLUMN_FIRSTNAME => $properties[self::COLUMN_FIRSTNAME],
