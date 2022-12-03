@@ -10,6 +10,9 @@ namespace App\Model;
 
 
 use Nette;
+use Nette\Http\FileUpload;
+
+
 
 class PhotoManager extends BaseManager
 {
@@ -88,6 +91,26 @@ class PhotoManager extends BaseManager
         unlink(__DIR__ . "/../../www/images/offers/".$path);
         $this->database->table(self::TABLE_NAME)->where(self::COLUMN_ID, $photoID)->delete();
     }
+    
+    public function removePhotoByPath($path) {
+        $photoId = $this->mainPhotoID($path);
+        if (($key = array_search($photoId, $_SESSION["arrayPhoto"])) !== false) {
+            unset($_SESSION["arrayPhoto"][$key]);
+        if (($key = array_search($path, $_SESSION["arrayPhotoName"])) !== false) {
+            unset($_SESSION["arrayPhotoName"][$key]);
+        if ($path == $_SESSION["mainPhoto"] ) {
+            if (!empty($_SESSION["arrayPhoto"])){
+                $_SESSION["mainPhoto"]= $this->mainPhotoPath(min($_SESSION["arrayPhoto"]));
+            }
+            else {
+                
+            }
+        };   
+        }
+        unlink(__DIR__ . "/../../www/images/offers/".$path);
+        $this->database->table(self::TABLE_NAME)->where(self::COLUMN_PATH, $path)->delete();
+        
+    }}
 
     public function changePhotoByTitle($photoID, $newPhoto){
         $photos = $this->database->table(self::TABLE_NAME)->get($photoID);
@@ -97,4 +120,84 @@ class PhotoManager extends BaseManager
             $photo->update([self::COLUMN_PATH => $newPhoto]);
         }
     }
+    
+    public function insertPhotos($photos) {
+        if($photos == []){
+	// $form->addError("Prosím nahrajte alespoň jednu fotografii.");
+	}else {                     
+                                    $arrayPhoto = [];
+                                    
+                                    
+                                    foreach ($photos as $photo){
+                                     $idPhoto = $this->getNextId();
+                                    
+                                     $name = $photo->getSanitizedName();
+                                     $photoValues = [
+                                        self::COLUMN_ID => $idPhoto,
+                                        self::COLUMN_PATH => $idPhoto.$name,
+                                        self::COLUMN_OFFER => null 
+                                     ];
+                                     $this->addPhoto($photoValues);
+                                     $photo->move(__DIR__."/../../www/images/offers/".$idPhoto.$name);
+                                     $arrayPhoto[] = $idPhoto;
+                                     
+                                    }
+                                     $_SESSION["arrayPhoto"]= $arrayPhoto;
+                                     
+                                     
+        }
+       
+        return $arrayPhoto[0];
+    }
+    
+     public function editOfferPhotos($IdOffer ) {
+        foreach ($_SESSION["arrayPhoto"] as $photo){
+            $photoValues = [
+                self::COLUMN_OFFER => $IdOffer 
+            ];
+            $this->editPhoto($photo, $photoValues);
+        }
+        $_SESSION["arrayPhoto"]= [];
+    }
+    
+    public function insertPhotosfromAjax($photos) {
+        if($photos == []){
+	// $form->addError("Prosím nahrajte alespoň jednu fotografii.");
+	}else {                     
+                                    $arrayPhoto = [];
+                                    $arrayPhotoName = [];
+                                    
+                                    foreach ($photos as $photo){
+                                     $idPhoto = $this->getNextId();
+                                 
+                                     $name = $photo['name'];
+                                     $photoValues = [
+                                        self::COLUMN_ID => $idPhoto,
+                                        self::COLUMN_PATH => $idPhoto.$name,
+                                        self::COLUMN_OFFER => null 
+                                     ];
+                                     $idPhoto = $this->addPhoto($photoValues);
+                                     move_uploaded_file($photo['tmp_name'], __DIR__."/../../www/images/offers/".$idPhoto.$name);
+                                     $arrayPhoto[] = $idPhoto;
+                                     $arrayPhotoName[] = $idPhoto.$name;
+                                    }
+                                     $_SESSION["arrayPhoto"]= $arrayPhoto;
+                                     $_SESSION["arrayPhotoName"] = $arrayPhotoName;
+                                     $mainPhotoPath = $this->mainPhotoPath($arrayPhoto[0]);
+                                     $_SESSION["mainPhoto"]= $mainPhotoPath;
+        }
+       
+        
+    }
+    
+    private function mainPhotoPath($mainPhotoID) {
+        $row = $this->database->table(self::TABLE_NAME)->get($mainPhotoID);
+        return $row->cesta;
+    }
+    public function mainPhotoID($path) {
+       $row = $this->database->table(self::TABLE_NAME)
+            ->where(self::COLUMN_PATH, $path)->fetch(); 
+       return $row->id;
+    }
+    
 }

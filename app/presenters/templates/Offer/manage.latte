@@ -14,12 +14,13 @@
     </script>
     <script>
         function uploadPhotos(){
-            var files = document.getElementById("fileupload").files;
+            var photos = document.getElementById("fileupload").files;
             var formdata = new FormData();
-            formdata.append("countFiles", files.length);
-            for(var i = 0; i < files.length; i++){
-                formdata.append("image"+i, files[i]);
+            formdata.append("countFiles", photos.length);
+            for(var i = 0; i < photos.length; i++){
+                formdata.append("images" + i, photos[i]);
             }
+            // formdata.append("images", photos);
             $.nette.ajax({
                 type: 'POST',
                 url: {plink uploadPhotos!},
@@ -37,107 +38,123 @@
                     "filename": filename
                 }
             });
+        } 
+        
+         function changeMainPhoto(filename){
+            $.nette.ajax({
+                type: 'POST',
+                url: {plink changeMainPhotoInsert!},
+                data: {
+                    "filename": filename
+                }
+            });
         }
     </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-<title>Správa nabídek</title>
-</head>
+<div class="container ">
+    <title>Správa nabídek</title>
+    </head>
 
-<nav>
-    <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
-        <h1>Správa nabídek</h1>
-        <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
-            {if $loggedIn === true}
-                {if $icon != null}
-                    <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
-                {else}
-                    <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
-                {/if}
-                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
-                <div class="buttons">
-                    <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
-                    <a n:href="Offer:list"><img width="100" src="{$basePath}/images/buton%20prohlédnout.jpg"></a>
-                </div>
-            {/if}
-            {if $loggedIn === false}
-                <div class="buttons">
-                    <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
-                        <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
-                </div>
-            {/if}
-        </div>
-    </div>
-
-    <ul class="breadcrumb">
-        <li class="breadcrumb-item"><a n:href="Homepage:default">Domovská stránka</a></li>
-        <li class="breadcrumb-item active">Správa nabídek</li>
-    </ul>
-</nav>
-{form addForm}
-    <ul class="errors list-unstyled" n:if="$form->hasErrors()">
-        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
-    </ul>
-    <div class="form-group">
-        <label>{label title/}</label>
-        <input class="form-control" type="text" n:name=title>
-        {inputError title}
-    </div>
-    <div class="form-group">
-        <label>{label price/}</label>
-        <input class="form-control" type="number" n:name=price>
-        {inputError price}
-    </div>
-    <div class="form-group">
-        <label>{label description/}</label>
-        <textarea class="form-control" n:name=description></textarea>
-        {inputError description}
-    </div>
-    <div class="form-group">
-        <label>{label category/}</label>
-        {input category}
-        {inputError category}
-    </div>
-
-    <div class="form-group">
-        <label>{label photos/}</label>
-        <input class="form-control-file" id="fileupload" n:name=photos onchange="uploadPhotos()">
-        {inputError photos}
-    </div>
-    {snippet photos}
-        <div class="d-flex flex-wrap">
-            {php $temp = 0}
-            {foreach $imagesForUpload as $imageForUpload}
-                {if $temp == 0}
-                    <div class="border border-dark">
-                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload['filename']}"><br/>
-                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload['filename']})">Odstranit</span><br/>
-                        <span>Hlavní fotografie</span>
-                    </div>
-                {else}
-                    <div>
-                        <img width="120" src="{$basePath}/images/offers/{$imageForUpload['filename']}"><br/>
-                        <span class="btn btn-danger" onclick="removePhotoInsertForm({$imageForUpload['filename']})">Odstranit</span>
+    <nav>
+        <div class="header d-flex flex-wrap align-items-center w-100 mb-2">
+            <h1>Správa nabídek</h1>
+            <div class="bg-light-green headerLogin d-flex flex-wrap align-items-center ml-auto rounded border border-dark">
+                {if $loggedIn === true}
+                    {if $icon != null}
+                        <img class="rounded" height='80' src="{$basePath}/images/icons/{$icon}">
+                    {else}
+                        <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
+                    {/if}
+                    <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
+                    <div class="buttons">
+                        <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
+                        <a n:href="Offer:list"><img width="100" src="{$basePath}/images/buton%20prohlédnout.jpg"></a>
                     </div>
                 {/if}
-                {php $temp++}
-            {/foreach}
+                {if $loggedIn === false}
+                    <div class="buttons">
+                        <a n:href="Sign:in"><a n:href="Sign:in"><img width="100" src="{$basePath}/images/buton%20přihlášení.jpg"></a>
+                            <a n:href="Sign:up"><a n:href="Sign:up"><img width="100" src="{$basePath}/images/buton%20registrace.jpg"></a>
+                    </div>
+                {/if}
+            </div>
         </div>
-    {/snippet}
-    <input class="btn btn-primary" type="submit" n:name=addOffer value="Přidat nabídku">
-{/form}
-<div class="w-100"><a class="float-right btn btn-danger" n:href="Offer:removeall">Odstranit všechny nabídky</a></div>
-{foreach $offers as $offer}
-    <div class="w-100 border border-dark d-flex flex-wrap align-items-center">
-        <strong class="w-25">{$offer[$title]}</strong>
-        <img class="mx-3" width="80" src="{$basePath}/images/offers/{$offer->fotografie->cesta}">
-        {$offer[$price]} Kč
-        <span class="ml-3 w-25">{$offer[$description] |first50}</span>
-        <a class="btn btn-primary ml-auto" n:href="Offer:edit $offer[$offerID]">Upravit</a>
-        <a class="btn btn-danger" n:href="Offer:remove $offer[$offerID]">Odstranit</a>
-    </div>
-{/foreach}
+
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a n:href="Homepage:default">Domovská stránka</a></li>
+            <li class="breadcrumb-item active">Správa nabídek</li>
+        </ul>
+    </nav>
+    {form addForm}
+        <ul class="errors list-unstyled" n:if="$form->hasErrors()">
+            <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
+        </ul>
+        <div class="form-group">
+            <label>{label title/}</label>
+            <input class="form-control" type="text" n:name=title>
+            {inputError title}
+        </div>
+        <div class="form-group">
+            <label>{label price/}</label>
+            <input class="form-control" type="number" n:name=price>
+            {inputError price}
+        </div>
+        <div class="form-group">
+            <label>{label description/}</label>
+            <textarea class="form-control" n:name=description></textarea>
+            {inputError description}
+        </div>
+        <div class="form-group">
+            <label>{label category/}</label>
+            {input category}
+            {inputError category}
+        </div>
+
+        <div class="form-group">
+            <label>{label photos/}</label>
+            <input class="form-control-file" id="fileupload" n:name=photos onchange="uploadPhotos()">
+            {inputError photos}
+        </div>
+        {snippet photos}
+            <div class="nav row">
+                {foreach $imagesForUpload as $imageForUpload}
+                    {if $imageForUpload == $mainPhoto}
+                        <div class="border border-dark card col-2 nav-item">
+                            <img class="mb-auto"  src="{$basePath}/images/offers/{$imageForUpload}"><br/>
+                          
+                              <H5 class="card-title">Hlavní fotografie</H5> 
+                            <button class="bg-danger " onclick="removePhotoInsertForm({$imageForUpload})">Odstranit</button><br/>
+                            
+                           
+                        </div>
+                    {else}
+                        <div class="border border-dark card col-2 nav-item">
+                            <img class="mb-auto"  src="{$basePath}/images/offers/{$imageForUpload}"><br/>
+                             
+                            <button class="bg-danger nav-item" onclick="removePhotoInsertForm({$imageForUpload})">Odstranit</button>
+                            <button class="bg-secondary nav-item" onclick="changeMainPhoto({$imageForUpload})">Nastavit jako hlavní fotografii</button>
+                         
+                        </div>
+                    {/if}
+                {/foreach}
+            </div>
+        {/snippet}
+        <input class="btn btn-primary mt-3" type="submit" n:name=addOffer value="Přidat nabídku">
+    {/form}
+    <div class="w-100"><a class="float-right btn btn-danger" n:href="Offer:removeall">Odstranit všechny nabídky</a></div>
+    {foreach $offers as $offer}
+        <div class="w-100 border border-dark d-flex flex-wrap align-items-center">
+            <strong class="w-25">{$offer[$title]}</strong>
+            <img class="mx-3" width="80" src="{$basePath}/images/offers/{$offer->fotografie->cesta}">
+            {$offer[$price]} Kč
+            <span class="ml-3 w-25">{$offer[$description] |first50}</span>
+            <a class="btn btn-primary ml-auto" n:href="Offer:edit $offer[$offerID]">Upravit</a>
+            <a class="btn btn-danger" n:href="Offer:remove $offer[$offerID]">Odstranit</a>
+        </div>
+    {/foreach}
+</div> 
 </body>
 
 </html>

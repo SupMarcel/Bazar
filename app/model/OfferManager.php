@@ -239,20 +239,14 @@ class OfferManager extends BaseManager
 
     public function setMainPhoto($photoID){
         $photo = $this->photoManager->get($photoID);
-        $photoPath = $photo[PhotoManager::COLUMN_PATH];
+        
         $offerID = $photo[PhotoManager::COLUMN_OFFER];
         $offer = $this->database->table(self::TABLE_NAME)->get($offerID);
-        $mainPhotoID = $this->photoManager->getIDOfMainPhoto($offerID);
-        $mainPhoto = $this->photoManager->get($mainPhotoID);
-        $newPath = $mainPhoto[PhotoManager::COLUMN_PATH];
-        $mainPhoto->update([
-            PhotoManager::COLUMN_PATH => $photoPath
-        ]);
-        $photo->update([
-           PhotoManager::COLUMN_PATH => $newPath
-        ]);
+        
+        
+              
         $offer->update([
-                self::COLUMN_MAIN_PHOTO => $photoPath
+                self::COLUMN_MAIN_PHOTO => $photoID
             ]
         );
     }

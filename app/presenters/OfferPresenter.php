@@ -16,6 +16,7 @@ use Nette\Forms\Form;
 use Nette\Neon\Exception;
 use Nette\Security\User;
 use Nette\Utils\Json;
+use Nette\Http\FileUpload;
 
 /**
  * Created by PhpStorm.
@@ -117,26 +118,28 @@ class OfferPresenter extends BasePresenter
     public function createComponentAddForm(){
         $form = $this->offerFormFactory->createForm($this->getUser()->id);
         $form->onSuccess[] = function(Form $form, $values){
-            $photos = $_SESSION["fileArray"];
-            if(count($photos) == 0){
-                $form->addError("Prosím nahrajte alespoň jednu fotografii.");
+            $photos = $values["photos"];
+            if (empty($_SESSION["arrayPhoto"])){
+                $mainPhotoID = $this->photoManager->insertPhotos($photos);
             } else {
+                $mainPhotoID = $this->photoManager->mainPhotoID($_SESSION["mainPhoto"]);
+            }
                 $allValues = [
                     OfferManager::COLUMN_TITLE => $values["title"],
                     OfferManager::COLUMN_PRICE => $values["price"],
                     OfferManager::COLUMN_DESCRIPTION => $values["description"],
                     OfferManager::COLUMN_CATEGORY => $values["category"],
                     OfferManager::COLUMN_USER => $this->getUser()->id,
-                    OfferManager::COLUMN_MAIN_PHOTO => $_SESSION['MainPhotoID']
+                    OfferManager::COLUMN_MAIN_PHOTO => $mainPhotoID
                 ];
                 $row = $this->offerManager->addOffer($allValues);
                 $offerID = $row[OfferManager::COLUMN_ID];
-                foreach ($photos as $photo) {
-                    $this->photoManager->editPhoto($photo['id'], [PhotoManager::COLUMN_OFFER => $offerID]);
-                }
-                $_SESSION["fileArray"] = [];
+                
+                $this->photoManager->editOfferPhotos($offerID);
+                
+                $_SESSION["arrayPhotoName"] = [];
                 $this->redirect("Offer:manage");
-            }
+            
         };
         return $form;
     }
@@ -147,20 +150,28 @@ class OfferPresenter extends BasePresenter
     public function createComponentEditForm(){
         return new Multiplier(function($offerId){
             $id = intval($offerId);
-			$_SESSION["offerID"] = $id;
+	    $_SESSION['offerId'] = $id;
             $form = $this->offerFormFactory->createEditForm($id, $this->getUser()->id);
             $form->onSuccess[] = function(Form $form, $values){
-				$photos = $_SESSION["fileArray"];
+				$photos =  $values["photos"];
 				if(count($photos) == 0){
 					$form->addError("Prosím nahrajte alespoň jednu fotografii.");
 				} else {
-					$mainPhotoTitle = null;
-					foreach($photos as $photoFilename){
-						if(empty($mainPhotoTitle)){
-							$mainPhotoTitle = $photoFilename;
-							break;
-						}
-					}
+                                    $arrayPhoto = [];
+                                    foreach ($photos as $photo){
+                                     $idPhoto = $this->photoManager->getNextId();
+                                     $name = $photo->getSanitizedName();
+                                     $photoValues = [
+                                         PhotoManager::COLUMN_ID => $idPhoto,
+                                         PhotoManager::COLUMN_PATH => $idPhoto.$name,
+                                         PhotoManager::COLUMN_OFFER => $_SESSION['offerId'] 
+                                     ];
+                                     $this->photoManager->addPhoto($photoValues);
+                                     $photo->move(__DIR__."/../../www/images/offers/".$idPhoto.$name);
+                                     $arrayPhoto[] = $idPhoto;
+                                     
+                                    };
+					$mainPhotoTitle = $arrayPhoto[0];
 					$allValues = [
 						OfferManager::COLUMN_TITLE => $values["title"],
 						OfferManager::COLUMN_PRICE => $values["price"],
@@ -169,15 +180,17 @@ class OfferPresenter extends BasePresenter
 						OfferManager::COLUMN_MAIN_PHOTO => $mainPhotoTitle,
 						OfferManager::COLUMN_USER => $this->getUser()->id
 					];
-					$row = $this->offerManager->editOffer($_SESSION["offerID"], $allValues);
+					$row = $this->offerManager->editOffer($_SESSION['offerId'], $allValues);
 					$_SESSION["fileArray"] = [];
 					$this->flashMessage("Úspěšně upraveno.");
-					$this->redirect(303, "Offer:manage");
+					$this->redirect("Offer:manage");
 				}
             };
             return $form;
         });
     }
+    
+    
 
     public function createComponentAddCommentForm(){
         $form = $this->commentFormFactory->create($this->getUser()->id, intval($this->offer));
@@ -233,7 +246,17 @@ class OfferPresenter extends BasePresenter
         }
         return $cityArray;
     }
-
+    
+    public function renderRemovePhotoById($photoID){
+        
+            $this->template->setFile(__DIR__ . '/templates/Offer/edit.latte');
+            $offerId = $this->photoManager->get($photoID)[PhotoManager::COLUMN_OFFER];
+            $this->offerManager->removePhotoAndChangeMain($photoID);
+            $this->renderEdit($offerId);
+            $this->redrawControl("allPhotos");
+    }
+    
+    
     public function handleRemovephoto(){
         if($this->isAjax()){
             $photoID = $this->getParameter("photoID");
@@ -241,7 +264,17 @@ class OfferPresenter extends BasePresenter
             $this->redrawControl("allPhotos");
         }
     }
-
+    
+    public function renderChangemainphotoById($photoID){
+            $this->template->setFile(__DIR__ . '/templates/Offer/edit.latte');
+            $offerId = $this->photoManager->get($photoID)[PhotoManager::COLUMN_OFFER];
+            $photoID = $this->getParameter("photoID");
+            $this->offerManager->setMainPhoto($photoID);
+            $this->renderEdit($offerId);
+            $this->redrawControl("allPhotos");
+        
+    }
+    
     public function handleChangemainphoto(){
         if($this->isAjax()){
             $photoID = $this->getParameter("photoID");
@@ -252,10 +285,10 @@ class OfferPresenter extends BasePresenter
 
     public function handleUploadPhotos(){
         if($this->isAjax()){
+                
              $offerID = isset($_POST["offerID"]) ? intval($_POST["offerID"]) : null;
-             
-            $countFiles = intval($_POST["countFiles"]);
-            for($i = 0; $i < $countFiles; $i++){
+
+            /*for($i = 0; $i < $countFiles; $i++){
                 $tmpName = $_FILES["image".$i]["tmp_name"];
                 $fileName = $_FILES["image".$i]["name"];
                 $formatName = explode('.', $fileName);
@@ -274,8 +307,11 @@ class OfferPresenter extends BasePresenter
                 }
                 move_uploaded_file($tmpName, $path);
                 array_push($_SESSION["fileArray"], ['id' => $photoId, 'filename' => $resultName]);
-            }
+            }*/
+              
+            $this->photoManager->insertPhotosfromAjax($_FILES);
             $this->redrawControl("photos");
+            
         }
     }
 
@@ -283,10 +319,11 @@ class OfferPresenter extends BasePresenter
         if($this->isAjax()){
             $fileName = $this->getParameter("filename");
             if(file_exists(__DIR__."/../../www/images/offers/".$fileName)){
-                unlink(__DIR__."/../../www/images/offers/".$fileName);
+                $this->photoManager->removePhotoByPath($fileName);
+                //unlink(__DIR__."/../../www/images/offers/".$fileName);
             }
             
-            $key = false;
+           /* $key = false;
             foreach($_SESSION["fileArray"] as $id => $file) {
                 if ($file['filename'] == $fileName) {
                     $key = $id;
@@ -295,12 +332,21 @@ class OfferPresenter extends BasePresenter
             }
             if( $key !== false ) {
                 unset( $_SESSION["fileArray"][ $key ] );
-            }
+            }*/
             $this->redrawControl("photos");
         }
     }
 
-
+    
+    public function handleChangeMainPhotoInsert() {
+        
+        if ($this->isAjax()){
+           $fileName = $this->getParameter("filename"); 
+           $_SESSION["mainPhoto"] = $fileName;
+           $this->redrawControl("photos");
+        }
+    }
+    
     public function renderAdd(){
         if(!isset($_SESSION["fileArray"])){
             $_SESSION["fileArray"] = [];
@@ -395,6 +441,7 @@ class OfferPresenter extends BasePresenter
     }
 
     public function renderManage(){
+      
         if(!isset($_SESSION["fileArray"])){
             $_SESSION["fileArray"] = [];
         }
@@ -415,10 +462,10 @@ class OfferPresenter extends BasePresenter
         $this->template->title = OfferManager::COLUMN_TITLE;
         $this->template->price = OfferManager::COLUMN_PRICE;
         $this->template->description = OfferManager::COLUMN_DESCRIPTION;
-        $this->template->image = OfferManager::COLUMN_MAIN_PHOTO;
+        $this->template->mainPhoto = $_SESSION["mainPhoto"];
         $this->template->photoID = PhotoManager::COLUMN_ID;
         $this->template->photoPath = PhotoManager::COLUMN_PATH;
-        $this->template->imagesForUpload = $_SESSION["fileArray"];
+        $this->template->imagesForUpload = isset($_SESSION["arrayPhotoName"])?$_SESSION["arrayPhotoName"]:[];
         $this->template->addFilter('first50', function($description){
             if(empty($description)){
                 return "";

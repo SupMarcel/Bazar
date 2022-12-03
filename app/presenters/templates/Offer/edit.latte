@@ -13,7 +13,7 @@
         $.nette.init();
     </script>
     <script>
-        function removePhoto(id){
+        /* function removePhoto(id){
             $.nette.ajax({
                 type: 'GET',
                 url: {plink removephoto!},
@@ -48,7 +48,7 @@
                 contentType: false,
                 processData: false
             });
-        }
+        } */
     </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
@@ -88,7 +88,7 @@
     </ul>
 </nav>
 
-{form editForm-$offerID}
+{form editForm-{$offerID}}
     <ul class="errors list-unstyled" n:if="$form->hasErrors()">
         <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
     </ul>
@@ -118,9 +118,9 @@
                 <div class="width15 d-flex flex-column my-3 mx-3">
                     <img class="width15" src="{$basePath}/images/offers/{$photo[$photoPath]}">
                     {if $moreThanOnePhoto == true}
-                        <span class="btn btn-danger" onclick="removePhoto({$photo[$photoID]})">Odstranit</span>
+                        <a n:href="Offer:removePhotoById $photo[$photoID]"><span class="btn btn-danger" onclick="removePhoto({$photo[$photoID]})">Odstranit</span></a>
                         {if $photo[$photoPath] != $mainPhoto}
-                            <span class="btn btn-secondary" onclick="changeMainPhoto({$photo[$photoID]})">Nastavit jako hlavní fotografii</span>
+                            <a n:href="Offer:changemainphotoById $photo[$photoID]"><span class="btn btn-secondary" onclick="changeMainPhoto({$photo[$photoID]})">Nastavit jako hlavní fotografii</span></a>
                         {/if}
                     {/if}
                 </div>
@@ -129,7 +129,7 @@
     {/snippet}
     <div class="form-group">
         <label>{label photos/}</label>
-        <input class="form-control-file" id="fileupload" name="photos" type="file" multiple onchange="uploadPhotos({$offerID})">
+        <input class="form-control-file" id="fileupload" n:name=photos type="file">
     </div>
     <input class="btn btn-primary" type="submit" n:name=addOffer value="Upravit nabídku">
 {/form}
