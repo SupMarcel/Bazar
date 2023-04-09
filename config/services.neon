@@ -6,14 +6,26 @@ services:
     - App\Model\CityManager
     - App\Model\CommentManager
     - App\Model\OfferManager
-    - App\Model\PhotoManager
+    - App\Model\PhotoManager(%FOLDER_FOR_OFFER_PICTURES%,%FOLDER_FOR_CATEGORY_PICTURES%)
     - App\Model\ReportManager
     - App\Model\UserManager
     - App\Model\CommentAndOfferManager
     - App\Model\RegistrationManager
+    - App\Model\AddressManager
     - App\Control\CommentControl
-    - App\Forms\FormFactory
-    - App\Forms\OfferFormFactory
-    - App\Forms\CommentFormFactory
-    - App\Forms\SignInFormFactory
-    - App\Forms\SignUpFormFactory
+    - App\Services\FilterService
+    OfferFormFactory:
+        class: App\Forms\OfferFormFactory
+        inject: yes
+    CommentFormFactory:
+        class: App\Forms\CommentFormFactory
+        inject: yes
+    SignInFormFactory:
+        class: App\Forms\SignInFormFactory
+        inject: yes
+    SignUpFormFactory:
+        class: App\Forms\SignUpFormFactory
+        inject: yes
+
+
+

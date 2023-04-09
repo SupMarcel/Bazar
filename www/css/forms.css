@@ -56,13 +56,13 @@ input[type="submit"]:hover {
 
 .inline-form .form-component {
   display: inline-block;
-  max-width: 120px;
+  
   margin-right: 10px !important;
 }
 
 .form-component > label:first-child {
   float: left;
-  width: 120px;
+  width: 13rem;
   color: #222;
 }
 
@@ -101,12 +101,12 @@ input[type="submit"]:hover {
 */
 
 .fancyform {
-  max-width: 670px;
+  max-width: 90%;
   margin: 0 auto;
 }
 
 .inline-form {
-  max-width: none !important;
+  
   text-align: center;
 }
 
@@ -129,23 +129,29 @@ input[type="submit"]:hover {
   border-bottom-style: inset;
 }
 
-.fancyform input:not([type="submit"]),
-.fancyform textarea,
-.fancyform select {
-  width: calc(100% - 130px);
-  min-width: 300px;
-  padding: 4px;
-  background: #fafafa;
-  border: 1px solid #ccc;
-}
+
 
 .inline-form input:not([type="submit"]),
 .inline-form textarea,
 .inline-form select {
-  max-width: 120px !important;
-  min-width: 120px !important;
+  
 }
-
+.fancyform input[type="text"]
+ {
+  
+  padding: 4px;
+  background: #fffae1;
+  border: 1px solid #ccc;
+  width: 25rem;
+}
+.fancyform select
+ {
+  
+  padding: 4px;
+  background: #fffae1;
+  border: 1px solid #ccc;
+  width: 25rem;
+}
 .fancyform input:not([type="submit"]):focus,
 .fancyform textarea:focus {
   box-shadow: 0 2px 0 #3c95db;
@@ -155,16 +161,12 @@ input[type="submit"]:hover {
 
 /*** radio, checkbox ***/
 
-.fancyform input[type="radio"],
-.fancyform input[type="checkbox"] {
-  display: none;
-}
+
 
 .fancyform input[type="radio"] + label:before,
 .fancyform input[type="checkbox"] + label:before {
   content: "";
-  width: 14px;
-  height: 14px;
+  
   display: inline-block;
   vertical-align: middle;
   background: #fafafa;
@@ -193,7 +195,29 @@ input[type="submit"]:hover {
   border: 0;
   background: transparent;
 }
+.fancyform input[type="button"] {
+  cursor: pointer;
+  background: #ddd;
+  border: 0;
+  border-bottom: 2px solid #bababa;
+  padding: 5px 10px;
+  outline: 0;
+}
 
+.fancyform input[type="button"]:hover {
+  cursor: pointer;
+  background: #3c95db;
+  border: 0;
+  border-bottom: 2px solid #bababa;
+  padding: 5px 10px;
+  outline: 0;
+}
+
+.fancyform input[type="button"]::::-webkit-file-upload-button:hover {
+  background: #3c95db;
+  border-bottom: 2px solid #09628a;
+  color: #fafafa;
+}
 .fancyform input[type="file"]::-webkit-file-upload-button {
   cursor: pointer;
   background: #ddd;
@@ -220,7 +244,6 @@ input[type="submit"]:hover {
   padding: 3px 0 3px 0;
   background: #fafafa;
   border: 1px solid #ccc;
-  width: calc(100% - 130px);
 }
 
 .fancyform select[size]:not([size="1"]),
@@ -231,3 +254,13 @@ input[type="submit"]:hover {
 .clear {
   clear: both;
 }
+
+input:invalid {
+    background-color: #ff7950;
+}
+
+input:focus:valid {
+    background-color: #d4f0fe;
+}
+
+

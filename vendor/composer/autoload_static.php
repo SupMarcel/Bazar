@@ -8,12 +8,28 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
 {
     public static $files = array (
         'd507e002f7fce7f0c6dbf1f22edcb902' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/functions.php',
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
+        'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'S' => 
         array (
             'Symfony\\Thanks\\' => 15,
+            'Symfony\\Polyfill\\Php81\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Contracts\\Translation\\' => 30,
+            'Symfony\\Component\\Translation\\' => 30,
+            'Symfony\\Component\\Filesystem\\' => 29,
+            'Symfony\\Component\\Config\\' => 25,
+        ),
+        'C' => 
+        array (
+            'Contributte\\Translation\\' => 24,
         ),
         'A' => 
         array (
@@ -25,6 +41,38 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Symfony\\Thanks\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/thanks/src',
+        ),
+        'Symfony\\Polyfill\\Php81\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php81',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Symfony\\Contracts\\Translation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/translation-contracts',
+        ),
+        'Symfony\\Component\\Translation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/translation',
+        ),
+        'Symfony\\Component\\Filesystem\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/filesystem',
+        ),
+        'Symfony\\Component\\Config\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/config',
+        ),
+        'Contributte\\Translation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/contributte/translation/src',
         ),
         'App\\' => 
         array (
@@ -216,7 +264,6 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Nette\\DI\\Config\\Adapter' => __DIR__ . '/..' . '/nette/di/src/DI/Config/Adapter.php',
         'Nette\\DI\\Config\\Adapters\\NeonAdapter' => __DIR__ . '/..' . '/nette/di/src/DI/Config/Adapters/NeonAdapter.php',
         'Nette\\DI\\Config\\Adapters\\PhpAdapter' => __DIR__ . '/..' . '/nette/di/src/DI/Config/Adapters/PhpAdapter.php',
-        'Nette\\DI\\Config\\DefinitionSchema' => __DIR__ . '/..' . '/nette/di/src/DI/Config/DefinitionSchema.php',
         'Nette\\DI\\Config\\Helpers' => __DIR__ . '/..' . '/nette/di/src/DI/Config/Helpers.php',
         'Nette\\DI\\Config\\IAdapter' => __DIR__ . '/..' . '/nette/di/src/compatibility.php',
         'Nette\\DI\\Config\\Loader' => __DIR__ . '/..' . '/nette/di/src/DI/Config/Loader.php',
@@ -236,6 +283,7 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Nette\\DI\\Extensions\\ConstantsExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/ConstantsExtension.php',
         'Nette\\DI\\Extensions\\DIExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/DIExtension.php',
         'Nette\\DI\\Extensions\\DecoratorExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/DecoratorExtension.php',
+        'Nette\\DI\\Extensions\\DefinitionSchema' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/DefinitionSchema.php',
         'Nette\\DI\\Extensions\\ExtensionsExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/ExtensionsExtension.php',
         'Nette\\DI\\Extensions\\InjectExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/InjectExtension.php',
         'Nette\\DI\\Extensions\\ParametersExtension' => __DIR__ . '/..' . '/nette/di/src/DI/Extensions/ParametersExtension.php',
@@ -483,6 +531,7 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Nette\\Utils\\Type' => __DIR__ . '/..' . '/nette/utils/src/Utils/Type.php',
         'Nette\\Utils\\UnknownImageFileException' => __DIR__ . '/..' . '/nette/utils/src/Utils/exceptions.php',
         'Nette\\Utils\\Validators' => __DIR__ . '/..' . '/nette/utils/src/Utils/Validators.php',
+        'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
         'Tester\\Assert' => __DIR__ . '/..' . '/nette/tester/src/Framework/Assert.php',
         'Tester\\AssertException' => __DIR__ . '/..' . '/nette/tester/src/Framework/AssertException.php',
         'Tester\\CodeCoverage\\Collector' => __DIR__ . '/..' . '/nette/tester/src/CodeCoverage/Collector.php',

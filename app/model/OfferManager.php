@@ -12,18 +12,20 @@ use Latte;
 use Nette;
 use Nette\Mail\Message;
 use Nette\Mail\SendmailMailer;
+use App\Model\AddressManager;
+use  Nette\Utils\ArrayHash;
 
 class OfferManager extends BaseManager
 {
     const
-        TABLE_NAME = 'nabidka',
+        TABLE_NAME = 'offer',
         COLUMN_ID = 'id',
-        COLUMN_USER = 'uzivatel',
-        COLUMN_TITLE = 'nazevZbozi',
-        COLUMN_PRICE = 'cena',
-        COLUMN_DESCRIPTION = 'popisZbozi',
-        COLUMN_CATEGORY='kategorie',
-        COLUMN_MAIN_PHOTO='hlavniFotografie';
+        COLUMN_USER = 'user_id',
+        COLUMN_TITLE = 'product_title',
+        COLUMN_PRICE = 'price',
+        COLUMN_DESCRIPTION = 'product_description',
+        COLUMN_CATEGORY='category',
+        COLUMN_MAIN_PHOTO='main_photo';
 
     /** @var  CategoryManager */
     private $categoryManager;
@@ -38,10 +40,12 @@ class OfferManager extends BaseManager
 
     /** @var  Sender */
     private $sender;
+    
+    private $addressManager;
 
     public function __construct(Nette\Database\Explorer $database, CategoryManager $categoryManager,
                                 UserManager $userManager,
-        CommentManager $commentManager, PhotoManager $photoManager, Sender $sender)
+        CommentManager $commentManager, PhotoManager $photoManager, Sender $sender, AddressManager $addressManager)
     {
         parent::__construct($database);
         $this->categoryManager = $categoryManager;
@@ -49,6 +53,7 @@ class OfferManager extends BaseManager
         $this->commentManager = $commentManager;
         $this->photoManager = $photoManager;
         $this->sender = $sender;
+        $this->addressManager = $addressManager;
     }
 
     public function addOffer($properties){
@@ -118,177 +123,126 @@ class OfferManager extends BaseManager
         return $this->database->table(self::TABLE_NAME)
             ->where(self::COLUMN_USER, $user);
     }
-
-
-    public function getOffersByCity($city){
-        $allOffers = $this->database->table(self::TABLE_NAME);
-        $offers = array();
-        foreach($allOffers as $offer){
-            $userID = $offer[self::COLUMN_USER];
-            $user = $this->userManager->get($userID);
-            if($user[UserManager::COLUMN_CITY] == $city){
-                array_push($offers, $offer);
-            }
-        }
-        return $offers;
+    
+    public function countOrders() {
+        return $this->database->table(self::TABLE_NAME)->count('*');
     }
 
-    public function removePhotos($id){
-        $photos = $this->photoManager->getPhotosByOffer($id);
-        foreach($photos as $photo){
-            $filename = $photo[PhotoManager::COLUMN_PATH];
-            $id = $photo[PhotoManager::COLUMN_ID];
-            unlink(__DIR__ . "/../../www/images/offers/".$filename);
-            $this->photoManager->remove($id);
+    public function getOffersTable($params, $categoryId){
+        $table = $this->database->table(self::TABLE_NAME);
+        if(!empty($categoryId)) {
+            $table->where(self::COLUMN_CATEGORY, $categoryId); 
+            }     
+        if(!empty($params[self::COLUMN_TITLE])) {
+           $table->where('MATCH(' . self::COLUMN_TITLE . ', ' . self::COLUMN_DESCRIPTION . ') AGAINST (?)', $params[self::COLUMN_TITLE]);
         }
+        if(!empty($params["max".self::COLUMN_PRICE])) {
+            $table->where( self::COLUMN_PRICE.'<= ? ',  $params["max".self::COLUMN_PRICE]);
+        }
+        if(!empty($params["min".self::COLUMN_PRICE])) {
+            $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
+        }
+        if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
+           $filterByLatitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE." < ?";
+            $table->where($filterByLatitude,
+                          ($params["min".AddressManager::COLUMN_LATITUDE]),
+                          ($params["max".AddressManager::COLUMN_LATITUDE]));
+            $filterByLongitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE." < ?";
+            $table->where($filterByLongitude,
+                          ($params["min".AddressManager::COLUMN_LONGITUDE]),
+                          ($params["max".AddressManager::COLUMN_LONGITUDE]));
+        }
+        return $table;
+    }
+    
+    public function getOfferTableByParams($params = null) {
+        $table = $this->database->table(self::TABLE_NAME);
+        if(!empty($params[self::COLUMN_CATEGORY])) {
+            $categories = $this->categoryManager->getSubcategoryIds($params[self::COLUMN_CATEGORY]);
+            if(!empty($categories)){
+               $table->where(self::COLUMN_CATEGORY, $categories); 
+            }else{
+                  $table->where(self::COLUMN_CATEGORY, $params[self::COLUMN_CATEGORY]);
+            }     
+            
+        }
+        if(!empty($params[self::COLUMN_TITLE])) {
+          $table->where('MATCH(' . self::COLUMN_TITLE . ', ' . self::COLUMN_DESCRIPTION . ') AGAINST (?)', $params[self::COLUMN_TITLE]);
+        }
+        if(!empty($params["max".self::COLUMN_PRICE])) {
+            $table->where( self::COLUMN_PRICE.'<= ? ',  $params["max".self::COLUMN_PRICE]);
+        }
+        if(!empty($params["min".self::COLUMN_PRICE])) {
+            $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
+        }
+        if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
+            // $table->joinWhere->()joinWhere(AddressManager::TABLE_NAME, "")
+           // $filterByLatitude = "user.active_address.latitude > ? AND user.active_address.latitude < ?";
+            $filterByLatitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE." < ?";
+            $table->where($filterByLatitude,
+                          ($params["min".AddressManager::COLUMN_LATITUDE]),
+                          ($params["max".AddressManager::COLUMN_LATITUDE]));
+            $filterByLongitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE." < ?";
+            $table->where($filterByLongitude,
+                          ($params["min".AddressManager::COLUMN_LONGITUDE]),
+                          ($params["max".AddressManager::COLUMN_LONGITUDE]));
+        }
+        return $table;
+    }
+    
+    public function getCountOffers($params = null, $categoryId = null ) {
+       $table = $this->database->table(self::TABLE_NAME);
+        if(!empty($categoryId)) {
+            $table->where(self::COLUMN_CATEGORY, $categoryId); 
+            }     
+        if(!empty($params[self::COLUMN_TITLE])) {
+           $table->where('MATCH(' . self::COLUMN_TITLE . ', ' . self::COLUMN_DESCRIPTION . ') AGAINST (?)', $params[self::COLUMN_TITLE]);
+        }
+        if(!empty($params["max".self::COLUMN_PRICE])) {
+            $table->where( self::COLUMN_PRICE.'<= ? ',  $params["max".self::COLUMN_PRICE]);
+        }
+        if(!empty($params["min".self::COLUMN_PRICE])) {
+            $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
+        }
+        if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
+           $filterByLatitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE." < ?";
+            $table->where($filterByLatitude,
+                          ($params["min".AddressManager::COLUMN_LATITUDE]),
+                          ($params["max".AddressManager::COLUMN_LATITUDE]));
+            $filterByLongitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LONGITUDE." < ?";
+            $table->where($filterByLongitude,
+                          ($params["min".AddressManager::COLUMN_LONGITUDE]),
+                          ($params["max".AddressManager::COLUMN_LONGITUDE]));
+        }
+        return $table->count('*');
     }
 
-    public function filterOffer($offer, $category,
-                                $title = null, $priceFrom = null, $priceTo = null){
-        if($offer[self::COLUMN_CATEGORY] != $category && $category !== null){
-            return false;
-        }
-        $isHigherThanLowest = $priceFrom === null || $offer[self::COLUMN_PRICE] >= $priceFrom;
-        $isLowerThanHighest = $priceTo === null || $offer[self::COLUMN_PRICE] <= $priceTo;
-        if($title === null){
-            return $isHigherThanLowest && $isLowerThanHighest;
-        }
-        $textInTitle = mb_substr_count($offer[self::COLUMN_TITLE], $title) >= 1;
-        $textInDescription = mb_substr_count($offer[self::COLUMN_DESCRIPTION], $title) >= 1;
-        return $isHigherThanLowest && $isLowerThanHighest && $textInTitle
-            && $textInDescription;
-    }
-
-    public function getOffersByCriterion($category, $city,
-       $title = null, $priceFrom = null, $priceTo = null, $page = 1){
-        $allOffers = $this->getOffersByCity($city);
-        $offers = array();
-        foreach($allOffers as $offer){
-            if($this->filterOffer($offer, $category, $title, $priceFrom, $priceTo)){
-                array_push($offers, $offer);
-            }
-        }
-        return $offers;
-    }
-
-    public function getOffersByCitiesAndCriterion($category, $cities, $title = null, $priceFrom = null, $priceTo = null, $page = 1){
-        $offers = array();
-        foreach($cities as $city){
-            $offersInCity = $this->getOffersByCriterion($category, $city, $title, $priceFrom, $priceTo);
-            foreach($offersInCity as $offer){
-                array_push($offers, $offer);
-            }
-        }
-        return $offers;
-    }
-
-    public function getCountOffersByCitiesAndCriterionWithSubcategories($category, $cities, $title = null, $priceFrom = null, $priceTo = null){
-        $count = 0;
-        $subcategories = $this->categoryManager->getSubcategories($category);
-        foreach($cities as $city){
-            $offersInCity = $this->getOffersByCriterion($category, $city, $title, $priceFrom, $priceTo);
-            foreach($offersInCity as $offer){
-                $count++;
-            }
-            foreach($subcategories as $subcategory){
-                $subcategoryID = $subcategory[CategoryManager::COLUMN_ID];
-                $offers = $this->getOffersByCriterion($subcategoryID, $city, $title, $priceFrom, $priceTo);
-                foreach($offers as $offer){
-                    $count++;
-                }
-            }
-        }
-        return $count;
-    }
-
-	public function removeOffersByUser($user){
-		$offers = $this->getOffersByUser($user);
-		foreach($offers as $offer){
-			$this->removeOffer($offer[self::COLUMN_ID]);
-		}
+    public function removeOffersByUser($user){
+	$offers = $this->getOffersByUser($user);
+	foreach($offers as $offer){
+		$this->removeOffer($offer[self::COLUMN_ID]);
 	}
+    }
 	
     public function removeOffer($id){
         $this->commentManager->removeCommentsByOffer($id);
-        $this->removePhotos($id);
+        $this->photoManager->removePhotos($id);
         $this->remove($id);
     }
 
-    public function removePhotoAndChangeMain($id){
-        $photo = $this->photoManager->get($id);
-        $filename = $photo[PhotoManager::COLUMN_PATH];
-        $offerID = $photo[PhotoManager::COLUMN_OFFER];
-        $countPhotos = $this->photoManager->getCountPhotosByOffer(intval($offerID));
-        if($countPhotos > 1){
-            $offer = $this->database->table(self::TABLE_NAME)->get($offerID);
-            $mainPhoto = $offer[self::COLUMN_MAIN_PHOTO];
-            $this->photoManager->removePhoto($id);
-            if($filename === $mainPhoto){
-                $photos = $this->photoManager->getPhotosByOffer(intval($offerID));
-                $mainPhoto = null;
-                foreach($photos as $photo){
-                    $mainPhoto = $photo[PhotoManager::COLUMN_PATH];
-                    break;
-                }
-                $offer->update([
-                    self::COLUMN_MAIN_PHOTO => $mainPhoto
-                ]);
-            }
-        }
-    }
-
-    public function setMainPhoto($photoID){
-        $photo = $this->photoManager->get($photoID);
+    public function setMainPhoto($photoID, $offerID){
         
-        $offerID = $photo[PhotoManager::COLUMN_OFFER];
         $offer = $this->database->table(self::TABLE_NAME)->get($offerID);
-        
-        
-              
         $offer->update([
                 self::COLUMN_MAIN_PHOTO => $photoID
             ]
         );
     }
 
-    public function getOffersForSearching($text, $cities = [BaseManager::CITY]){
-        $allOffers = $this->database->table(self::TABLE_NAME);
-        $offers = array();
-        foreach($allOffers as $offer){
-            $title = $offer[self::COLUMN_TITLE];
-            $description = $offer[self::COLUMN_DESCRIPTION];
-            $userId = $offer[self::COLUMN_USER];
-            $user = $this->userManager->get($userId);
-            $cityOfUser = $user[UserManager::COLUMN_CITY];
-            $exists = false;
-            foreach($cities as $city){
-                if($city === $cityOfUser){
-                    $exists = true;
-                    break;
-                }
-            }
-            if($exists === false){
-                continue;
-            }
-            if(mb_substr_count($title, $text) > 0 || mb_substr_count($description, $text) > 0){
-                array_push($offers, $offer);
-            }
-        }
-        return $offers;
+    
+    public function getIDOfMainPhoto($offer){
+     $row = $this->database->table(self::TABLE_NAME)
+            ->where(self::COLUMN_ID, $offer)->fetch();
+     return $row->hlavniFotografie;
     }
-	
-	public function getOffersOnPage($offers, $page){
-		$offersOnThePage = array();
-		$index = 0;
-		foreach($offers as $offer){
-				if($index >= ($page - 1)*BaseManager::PAGE_SIZE
-				&& $index < $page*BaseManager::PAGE_SIZE){
-					array_push($offersOnThePage, $offer);
-				} else if($index == $page*BaseManager::PAGE_SIZE){
-					break;
-				}
-				$index++;
-		}
-        return $offersOnThePage;
-	}
 }

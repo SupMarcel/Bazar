@@ -1,0 +1,55 @@
+{layout '../@layout.latte'}
+
+<div class="container">
+{block content}
+<ul class="breadcrumb nav-item">
+        <li class="breadcrumb-item active">{_messages.homepage.title}</li>
+</ul>
+<nav class="nav flex-column">
+    <div class=" d-flex nav-item">
+        <div class="mr-auto nav flex-column">
+            <div id='harmonika' role="tablist" class='nav-item nav nav-tabs d-flex justify-content-start'>
+                <button class="nav-link active" id="nabidka" data-bs-toggle="tab" data-bs-target="#tab-nabidka" type="button" role="tab" aria-controls="tab-nabidka" aria-selected="true">
+                    <h6>                           
+                        Nabídka
+                    </h6>
+                </button>
+                
+                <button class="nav-link" id="zamereni" data-bs-toggle="tab" data-bs-target="#tab-zamereni" type="button" role="tab" aria-controls="tab-zamereni" aria-selected="false">
+                    <h6>                        
+                        Zaměření Bazaru                        
+                    </h6>
+                </button>
+                
+                <button class="nav-link" id="zakaz" data-bs-toggle="tab" data-bs-target="#tab-zakaz" type="button" role="tab" aria-controls="tab-zakaz" aria-selected="false">
+                    <h6>                        
+                        Zakázané položky
+                    </h6>
+                </button>
+                
+                <button class="nav-link" id="kupujici" data-bs-toggle="tab" data-bs-target="#tab-kupujici" type="button" role="tab" aria-controls="tab-kupujici" aria-selected="false">
+                    <h6>                        
+                        Informace pro kupující
+                    </h6>
+                </button>
+                
+                <button class="nav-link" id="prodejce" data-bs-toggle="tab" data-bs-target="#tab-prodejce" type="button" role="tab" aria-controls="tab-prodejce" aria-selected="false">
+                    <h6>                        
+                        Informace pro prodejce
+                    </h6>
+                </button>
+            </div>    
+        </div>
+        
+    </div>
+    <div class=" d-flex nav-item tab-content" id="harmonikaContent">
+      {include harmonikaContent}               
+    </div>    
+    
+</nav>
+
+<footer class="w-100" style="clear: both">
+<p class="my-3">Tuto aplikaci vyrobil Daniel Šup. Náměty a připomínky zašlete na e-mailovou adresu: <a href="mailto:oktagon@seznam.cz">oktagon@seznam.cz</a></p>
+</footer>
+{/block}
+</div>

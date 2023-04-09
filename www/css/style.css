@@ -40,10 +40,7 @@ h1 {
 	width: 100%;
 }
 
-.headerLogin{
-	float: right;
-	display: inline-block;
-}
+
 
 .buttons{
 	display: inline-block;
@@ -161,3 +158,89 @@ form .error {
 .bg-light-green{
 	background-color: #eaffea;
 }
+
+.custom-list-item {
+            flex: 1 0 calc(33.3333% - 20px);
+            max-width: calc(33.3333% - 20px);
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .custom-list-item :hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none !important;
+        }
+        
+         .custom-list-item a:hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none !important;
+        }
+
+        .custom-card {
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            
+        }
+
+        .custom-card:hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none !important;
+        }
+
+        .custom-card-header {
+            overflow: hidden;
+            height: 80%;
+        }
+
+        .custom-card-header img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .custom-card-body {
+            padding: 1rem;
+        }
+        
+        .custom-card-body:hover {
+            padding: 1rem;
+        }
+
+        .custom-card-body span {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        
+
+        .offer-col {
+            flex: 1 0 calc(33.3333% - 20px);
+            max-width: calc(33.3333% - 20px);
+            padding: 0;
+            margin: 10px;
+        }
+        
+        .offer-col a:hover {
+             text-decoration: none;
+        }
+
+        @media (max-width: 992px) {
+            .custom-list-item,
+            .offer-col {
+                flex: 1 0 calc(50% - 20px);
+                max-width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .custom-list-item,
+            .offer-col {
+                flex: 1 0 100%;
+                max-width: 100%;
+            }
+        }

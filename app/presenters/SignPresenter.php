@@ -5,6 +5,9 @@ namespace App\Presenters;
 use App\Forms;
 use App\Model\UserManager;
 use Nette\Application\UI\Form;
+use App\Components\PlanControl;
+use Nette\Utils\ArrayHash;
+use App\Model\AddressManager;
 
 
 class SignPresenter extends BasePresenter
@@ -17,17 +20,17 @@ class SignPresenter extends BasePresenter
 
 	/** @var Forms\SignUpFormFactory */
 	private $signUpFactory;
-
-	/** @var  UserManager */
-	private $userManager;
+        
+        /** @var  AddressManager */
+	private $addressManager;
 
 
 	public function __construct(Forms\SignInFormFactory $signInFactory, Forms\SignUpFormFactory $signUpFactory,
-    UserManager $userManager)
+                                    AddressManager $addressManager )
 	{
 		$this->signInFactory = $signInFactory;
 		$this->signUpFactory = $signUpFactory;
-		$this->userManager = $userManager;
+                $this->addressManager = $addressManager;
 	}
 
 
@@ -37,11 +40,11 @@ class SignPresenter extends BasePresenter
 	 */
 	protected function createComponentSignInForm()
 	{
-		return $this->signInFactory->create(function () {
-			$this->restoreRequest($this->backlink);
-			$this->redirect('Homepage:');
-		});
-	}
+            return $this->signInFactory->createSignForm(function () {
+                  $this->restoreRequest($this->backlink);
+                  $this->redirect("Homepage:");
+	    });
+        }
 
     public function createComponentEditForm(){
         $form =  $this->signUpFactory->createEditForm($this->getUser()->id);
@@ -57,13 +60,15 @@ class SignPresenter extends BasePresenter
 	 */
 	protected function createComponentSignUpForm()
 	{
-		return $this->signUpFactory->create(function () {
+		return $this->signUpFactory->createRegistrationForm(function () {
+                        $this->flashMessage('Děkujeme za Vaši registraci', self::MSG_SUCCESS);
 			$this->redirect('Homepage:');
 		});
 	}
 
     public function renderIn(){
         $this->template->loggedIn = $this->getUser()->id !== null;
+        
     }
 
     public function renderOut(){
@@ -72,9 +77,11 @@ class SignPresenter extends BasePresenter
 
     public function renderUp(){
         $this->template->loggedIn = $this->getUser()->id !== null;
+        $this->template->username = "";
+        
     }
 
-	public function renderUpdate(){
+    public function renderUpdate(){
         $this->template->loggedIn = $this->getUser()->id !== null;
         if($this->getUser()->id !== null){
             $identity = $this->getUser()->id;
@@ -85,8 +92,30 @@ class SignPresenter extends BasePresenter
             $this->template->icon = $icon;
             $sex = $user[UserManager::COLUMN_SEX];
             $this->template->sex = $sex;
+            
         }
     }
+    
+    public function handleCountAddresses() {
+           if ($this->isAjax()){
+               $userId = $this->getUser()->id;
+               $countAddresses = $this->addressManager->countAddresses($userId);
+               $this->sendJson(['countAddresses'=>$countAddresses]);
+           }
+    }
+    
+    public function handleSetActiveAddress() {
+           if ($this->isAjax()){
+               $userId = $this->getUser()->id;
+               $activeAddressId = $this->getParameter("addressId");
+               
+               if(!empty($activeAddressId)){
+                  $this->userManager->editActiveAddress($userId, $activeAddressId);
+               }   
+               $this->redirect('this');
+           }
+    }
+   
 
 
 	public function actionOut()
@@ -94,5 +123,10 @@ class SignPresenter extends BasePresenter
 		$this->getUser()->logout();
         $this->session->destroy();
 	}
-
+     protected function beforeRender()
+    {
+        parent::beforeRender();
+        $this->template->formPathPlan = __DIR__ . '/templates/formPlan.latte'; // Předá cestu ke globální šabloně formulářů do šablony.
+       
+    }
 }

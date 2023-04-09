@@ -9,7 +9,7 @@
                 {else}
                     <img class="rounded" height="80" src="{$basePath}/images/icons/default/ikona_{$sex == 0 ? 'muz' : 'zena'}.png">
                 {/if}
-                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$usernameLogged}</a></span>
+                <span class="d-inline-block mx-3">Přihlášen jako <a n:href="Sign:update">{$username}</a></span>
                 <div class="buttons">
                     <a n:href="Sign:out"><img width="100" src="{$basePath}/images/buton%20odhlášení.jpg"></a>
                     <a n:href="Offer:manage"><img width="100" src="{$basePath}/images/buton%20správa%20nabídek.jpg"></a>
@@ -28,4 +28,4 @@
         <li class="breadcrumb-item active">Úprava údajů</li>
     </ul>
 </nav>
-{control editForm}
+{include $formPathPlan, form => editForm}

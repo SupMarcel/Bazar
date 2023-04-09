@@ -10,11 +10,12 @@ namespace App\Forms;
 
 use App\Model;
 use Nette\Forms\Form;
+use App\Services\FilterService;
 
-class OfferFormFactory
+
+
+class OfferFormFactory extends FormFactory
 {
-    /** @var FormFactory */
-    private $factory;
     /** @var  Model\CityManager */
     private $cityManager;
     /**  @var Model\OfferManager*/
@@ -23,20 +24,22 @@ class OfferFormFactory
     private $categoryManager;
     /** @var  Model\PhotoManager */
     private $photoManager;
+    
+    private $filterService;
 
     private $user;
     private $offer;
 
-    public function __construct(FormFactory $factory,
-                                Model\CityManager $cityManager,
+    public function __construct(Model\CityManager $cityManager,
                                 Model\OfferManager $offerManager,
                                 Model\CategoryManager $categoryManager,
-Model\PhotoManager $photoManager){
-        $this->factory = $factory;
+                                Model\PhotoManager $photoManager,
+                                FilterService $filterService){
         $this->cityManager = $cityManager;
         $this->offerManager = $offerManager;
         $this->categoryManager = $categoryManager;
         $this->photoManager = $photoManager;
+        $this->filterService = $filterService;
         $this->user = null;
         $this->offer = null;
     }
@@ -59,18 +62,17 @@ Model\PhotoManager $photoManager){
 
     public function createForm($user){
         $this->user = $user;
-        $form = $this->factory->create();
+        $form = $this->create();
         $form->addText('title', 'Název')
             ->setRequired(true)->addRule(Form::MAX_LENGTH, "Název musí být dlouhý nejvýše 65 znaků.", 65);
         $form->addInteger('price', 'Cena')
             ->setRequired(true);
         $form->addTextArea('description', 'Popis');
         $form->addSelect('category', 'Kategorie')->setRequired(true)->setHtmlAttribute("class", "form-control");
-        $form->addMultiUpload('photos', "Fotografie")->setRequired(true)->
-        setHtmlAttribute("class", "form-control-file")->
-        addRule(Form::MIN_LENGTH,
-                "Je potřeba nahrát alespoň jeden soubor. Jeden ze souborů bude použit jako hlavní fotografie.",
-                1);
+        $form->addMultiUpload('photos', "Fotografie")
+             ->setHtmlAttribute("id", "fileupload")
+             ->setHtmlAttribute("class", "form-control-file")
+             ->setHtmlAttribute("onchange", "uploadPhotos()");
         $form->addSubmit('addOffer', 'Umístit nabídku');
         $form["category"]->setItems($this->createCategoriesForForm());
         return $form;
@@ -79,7 +81,7 @@ Model\PhotoManager $photoManager){
     public function createEditForm($id, $user){
         $this->offer = $id;
         $this->user = $user;
-        $form = $this->factory->create();
+        $form = $this->create();
         $form->addText('title', 'Název')
             ->setRequired(true)->addRule(Form::MAX_LENGTH, "Název musí být dlouhý nejvýše 65 znaků.", 65);
         $form->addInteger('price', 'Cena')
@@ -108,17 +110,33 @@ Model\PhotoManager $photoManager){
         return $citiesForForm;
     }
 
-    public function createFilterForm(){
-        $form = $this->factory->create();
-        $form->addInteger('priceFrom', "Cena od");
-        $form->addInteger('priceTo', 'Cena do');
-        $form->addCheckboxList('cities', '', $this->getCities())->addCondition(Form::NOT_EQUAL, []);
+    public function createFilterForm($parameters,$user = null){
+        $form = $this->create();
+        if(!empty($user)){
+            $latitude2 = $user->active_address->{Model\AddressManager::COLUMN_LATITUDE};
+            $longitude2 = $user->active_address->{Model\AddressManager::COLUMN_LONGITUDE};
+            $categories = $this->filterService->getCategoriesForSelect($parameters, $latitude2 , $longitude2);
+        }else{
+             $categories = $this->filterService->getCategoriesForSelect($parameters);
+        }
+        $form->addSelect(Model\OfferManager::COLUMN_CATEGORY, 'V kategorii:', $categories);
+        $form->addText(Model\OfferManager::COLUMN_TITLE , 'text v titulku');
+        $form->addInteger('min'.Model\OfferManager::COLUMN_PRICE, "Cena od");
+        $form->addInteger('max'.Model\OfferManager::COLUMN_PRICE, 'Cena do');
+        if(!empty($user)){
+            if (!empty($parameters['distance'])){
+                $form->addInteger('distance', 'V mém okolí do tohoto počtu km')
+                     ->setDefaultValue($parameters['distance']) ;  
+            }else{
+                 $form->addInteger('distance', 'V mém okolí do tohoto počtu km');
+             }
+        }     
         $form->addSubmit('search', 'Vyhledat nabídky');
         return $form;
     }
 
     public function createSearchForm(){
-        $form = $this->factory->create();
+        $form = $this->create();
         $form->addText("text","");
         $form->addSubmit("search", "Vyhledat");
         return $form;

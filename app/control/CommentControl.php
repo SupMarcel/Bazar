@@ -14,65 +14,90 @@ use App\Model\CommentManager;
 use App\Model\UserManager;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Multiplier;
+use Nette\Utils\Paginator;
 
 class CommentControl extends Control
 {
-    private $user;
+   
     private $offer;
     private $comment;
     /**
      * @var CommentManager
      */
     private $commentManager;
-
-    /** @var  UserManager */
-    private $userManager;
-
-    /** @var  CommentFormFactory */
+/** @var  CommentFormFactory */
     private $commentFormFactory;
-
+    private $userManager;
+    private $paginator;
+   
+  
+    
+    
     /**
      * CommentControl constructor.
-     * @param $user
-     * @param $offer
+      * @param $offer
      * @param $comment
      * @param CommentManager $commentManager
      * @param CommentFormFactory $commentFormFactory
      */
     public function __construct(CommentManager $commentManager, UserManager $userManager,
-                                CommentFormFactory $commentFormFactory,
-                                $user = null, $offer = null, $comment = null){
-        $this->user = $user;
-        $this->offer = $offer;
-        $this->comment = $comment;
-        $this->commentManager = $commentManager;
+                                CommentFormFactory $commentFormFactory,  $offer = null, $comment = null, Paginator $paginator = null ){
         $this->userManager = $userManager;
+        $this->offer = $offer;
+        $this->commentManager = $commentManager;
         $this->commentFormFactory = $commentFormFactory;
-    }
-
+        $this->comment = $comment;
+        $this->paginator = $paginator;
+     }
+     
+    public function handlePage($page = 1) {
+        $reactionsCount = $this->commentManager->getCountReakcions($this->comment);
+        $this->paginator->setItemCount($reactionsCount);
+        $_SESSION["commentsPage"] = $page;
+   }
+    
+    
+    
     public function render(){
+        if($this->comment == 0){
+            $this->comment = null;
+            $reactionsCount = $this->commentManager->getCountReakcions($this->comment);
+            $this->paginator->setItemCount($reactionsCount);
+            $this->paginator->setItemsPerPage(3); // počet položek na stránce
+            if (!empty($_SESSION["commentsPage"])){
+             $this->paginator->setPage($_SESSION["commentsPage"]);   
+            } else {
+                    $this->paginator->setPage(1);
+            }
+            $this->template->paginator = $this->paginator;
+            $this->template->reactions = $this->commentManager->getDirectReactions($this->comment, $this->paginator->getLength(),$this->paginator->getOffset());
+        }else{
+              $this->template->reactions = $this->commentManager->getDirectReactions($this->comment);
+         }
         $this->template->setFile(__DIR__."/comment.latte");
+        $this->template->formBootstrap = __DIR__ . '../../presenters/templates/form-bootstrap3.latte'; 
         $this->template->comment = $this->commentManager->get($this->comment);
         $this->template->commentID = CommentManager::COLUMN_ID;
         $this->template->commentAuthor = CommentManager::COLUMN_USER;
         $this->template->commentText = CommentManager::COLUMN_TEXT;
-        $this->template->loggedIn = $this->user !== null;
-        $this->template->reactions = $this->commentManager->getDirectReactions($this->comment);
         $this->template->addFilter('authorname', function($id){
-            $author = $this->userManager->get($id);
+            $comment = $this->commentManager->get($this->comment);
+            $author = $this->userManager->get($comment[CommentManager::COLUMN_USER]);
             return $author[UserManager::COLUMN_NAME];
         });
         $this->template->render();
     }
 
     public function createComponentReaction(){
-        return new Multiplier(function($id){
+        return new Multiplier(function( $commentId = null){
            return new CommentControl($this->commentManager, $this->userManager, $this->commentFormFactory,
-               $this->user, $this->offer, $id);
+                $this->offer, $commentId );
         });
     }
 
     public function createComponentAddReactionForm(){
-        return $this->commentFormFactory->create($this->user, $this->offer, $this->comment);
+        return $this->commentFormFactory->createFormComment($this->getPresenter()->getUser()->id, $this->offer, $this->comment);
     }
+    
+    
 }

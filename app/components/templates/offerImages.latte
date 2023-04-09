@@ -1,0 +1,73 @@
+{snippet photos}
+        <div class="d-flex flex-wrap row mb-3">
+            
+            {foreach $imagesForUpload as $imageForUpload}
+                {if $mainPhoto == $imageForUpload}
+                    <div class="d-flex flex-column justify-content-end border border-dark col-2">
+                        <div class="text-center mb-1">
+                          <img  src="{$basePath}/images/offers/{$imageForUpload}">
+                        </div>  
+                        <span class="btn btn-danger mb-1" onclick="removePhoto({$imageForUpload})">{_messages.offerImagesControl.default.deletePhoto}</span>
+                        <div class="mb-4 font-weight-bold">{_messages.offerImagesControl.default.mainPhoto}</div>
+                    </div>
+                {else}
+                    <div class="d-flex flex-column justify-content-end col-2 border border-dark">
+                        <div class="text-center mb-1">
+                          <img src="{$basePath}/images/offers/{$imageForUpload}">
+                        </div>  
+                        <span class="btn btn-danger mb-1" onclick="removePhoto({$imageForUpload})">{_messages.offerImagesControl.default.deletePhoto}</span>
+                        <a class="bg bg-light" href="#" onclick="changeMainPhoto({$imageForUpload})">{_messages.offerImagesControl.default.changeMainPhoto}</a>
+                    </div>
+                {/if}
+                
+            {/foreach}
+        </div>
+    {/snippet}
+     <script>
+       
+        function uploadPhotos(){
+            var photos = document.getElementById("fileupload").files;
+            var formdata = new FormData();
+            formdata.append("countFiles", photos.length);
+            for(var i = 0; i < photos.length; i++){
+                formdata.append("images" + i, photos[i]);
+            }
+            {ifset $offerId}
+                formdata.append("offerID", {$offerId});
+            {/ifset}
+            // formdata.append("images", photos);
+            $.nette.ajax({
+                type: 'POST',
+                url: {link uploadPhotos!},
+                data: formdata,
+                contentType: false,
+                processData: false
+            });
+        }
+
+        
+            function changeMainPhoto(filename){
+                let data = { "filename": filename };
+                {ifset $offerId}
+                     data["offerID"] = {$offerId};
+                {/ifset}
+                $.nette.ajax({
+                    type: 'GET',
+                    url: {link changemainphoto!},
+                    data: data
+                });
+            }
+
+            function removePhoto(filename){
+                let data = { "filename": filename };
+                {ifset $offerId}
+                     data["offerID"] = {$offerId};
+                {/ifset}
+                $.nette.ajax({
+                    type: 'GET',
+                    url: {link removePhoto!},
+                    data: data
+                });
+            }
+        
+    </script>

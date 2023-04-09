@@ -1,0 +1,32 @@
+{* Vlastní šablona pro renderování formulářů. *}
+{block head}
+    <link rel="stylesheet" href="{$basePath}/css/formsInLine.css">
+{/block}
+<form n:name=$form class=" fancyform inline-form form-row align-items-end my-2 mb-4"{ifset $class}{$class}{/ifset}">
+ <ul class="errors list-unstyled" n:if="$form->hasErrors()">
+        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
+ </ul> 
+ <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>       
+{foreach $form->controls as $input}
+    {var $button = $input->controlPrototype->type == 'submit'}
+    <div  n:class= "$button ? col-auto : col-2">
+        {label $input /}
+        {if $input->controlPrototype->type == checkbox}
+            {input $input:}
+            {label $input: /}
+        {else}
+            {if $input->error}
+                {input $input, class => 'invalid'}
+            {else}
+                {input $input}
+            {/if}
+        {/if}
+        <div n:if="!$button" class="col-2"></div>
+    </div>
+    {ifset $widget}
+        {if $input->getName() == $widget->after}
+            {control $widget->name}
+        {/if}
+    {/ifset}
+{/foreach}
+</form>

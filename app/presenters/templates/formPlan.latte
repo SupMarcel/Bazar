@@ -1,0 +1,451 @@
+{block head}
+<link rel="stylesheet" href="{$basePath}/css/forms.css">
+<script src="{$basePath}/js/loader2.js"></script>
+
+<script>
+    window.load = function () {
+        Loader.async = true;
+        Loader.load(null, { suggest: true }, createSuggest);
+    }
+
+    window.createSuggest = function () {
+        var inputEl = document.getElementById('text-address');
+        let divParent = inputEl.parentNode.parentNode;
+        var suggest = new SMap.Suggest(inputEl);
+        var lastSuggestData = null;
+        suggest.urlParams({
+            lang: {$actualLanguageCode}
+        });
+        suggest.addListener("suggest", function (suggestData) {
+            // vyber polozky z naseptavace
+            lastSuggestData = suggestData;
+            $.ajax({
+                url: "https://api.mapy.cz/v0/suggest/",
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'x-mapy-api-key': 'virtual-421aa90e079fa326b6494f812ad13e79',
+                    'x-szn-sdk': 'HgUbCgUbGkgqAQkYBxYEHQNHQlJcQlBSQ1xbQg=='
+                },
+                data: {
+                    lang: {$actualLanguageCode},
+                    count: 1,
+                    phrase: suggestData.phrase
+                },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    console.log(result);
+                    let zipCode = result['result']['0']['userData']['zipCode'];
+                    let formComponents = divParent.children;
+                    for (let formComponent of formComponents) {
+                        let input = formComponent.querySelector('input');
+                        let address = result['result']['0']['userData']['suggestSecondRow'].split(',');
+                        let indexState = (address.length) - 1;
+                        if (input) {
+                            switch (input['name']) {
+                                case "zip_code":
+                                    input.value = zipCode;
+                                    break;
+                                case "city":
+                                    input.value = address[1];
+                                    break;
+                                case "state":
+                                    input.value = address[indexState];
+                                    if (input.value) {
+                                        inputEl.setAttribute('readonly', 'readonly');
+                                        let addNextAddressButton = document.getElementById('addAddress');
+                                        addNextAddressButton.hidden=false;
+                                        addNextAddressButton.onclick = insertComplet;
+                                        let removeAddressButton = document.getElementById('removeAddress');
+                                        removeAddressButton.hidden=false;
+                                        removeAddressButton.onclick = clearAddress;
+                                    }
+                                    break;
+                                case "latitude":
+                                    input.value = suggestData.data.latitude;
+                                    break;
+                                case "longitude":
+                                    input.value = suggestData.data.longitude;
+                                    break;
+                            }
+                            if (address.length == 4) {
+                                if (input['name'] == "region") {
+                                    input.value = address[2];
+                                }
+                            }
+                            if (input['name'] == "zip_code") {
+                                input.value = zipCode;
+                                if (input.value) {
+
+                                    inputEl.setAttribute('readonly', 'readonly');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+
+        });
+
+    }
+</script>
+<script type="module">
+
+    window.onload = function () {
+        let countAddresses = 0;
+        let complet = document.createElement('div');
+        let inputElements = document.querySelectorAll('div.form-component:has(.formPlan)');
+        let form = document.querySelector('form');
+        let phone = document.querySelector("input[name='phone']").parentElement;
+        form.insertBefore(complet, phone);
+        for (let inputElement of inputElements) {
+            complet.appendChild(inputElement);
+            let Zip = inputElement.children;
+            for (let input of Zip) {
+                if(input.classList.contains('activeButton')){
+                    form.insertBefore(complet, phone);
+                    formPlanIndex++;
+                    complet = document.createElement('div');
+                }
+            }
+        }
+        form.insertBefore(complet, phone);
+        
+        let changeButtons = document.getElementsByClassName('activeButton');
+        for (let changeButton of changeButtons){
+            let addressId = changeButton.parentElement.parentElement.querySelector("input.activeAddress").value;
+            let state = changeButton.parentElement.parentElement.querySelector(".state").value;
+            if (addressId){
+                changeButton.onclick = function (){ setActiveAddress(addressId); };
+            }else if ({$username} != '' && state){
+                let streetNumber = changeButton.parentElement.parentElement.querySelector(".street").value;
+                let city = changeButton.parentElement.parentElement.querySelector(".city").value;
+                let zipCode = changeButton.parentElement.parentElement.querySelector(".zipCode").value;
+                changeButton.onclick = function (){ setNewActiveAddress(streetNumber, city, zipCode, state ); };  
+             }else{
+                  changeButton.hidden = true; 
+              }   
+            
+        }
+        
+        setRemoveButtons();
+        
+        let adAddressButtons = document.querySelectorAll('.addAddress');
+        let index = adAddressButtons.length - 1;
+        if ({$username} != ''){
+            adAddressButtons[index].hidden = false;
+            adAddressButtons[index].onclick = insertComplet;
+        }
+        
+        let streetInput = document.querySelector("input[name='street_house_number']");
+        streetInput.onchange = function () {
+            var stateInput = document.querySelector("input[name='state']");
+            if (!stateInput.value) {
+                streetInput.value = '';
+            }
+        }
+        load();
+    };
+</script> 
+<script>
+    function removeAddress(adressId = "") {
+        if (confirm({_messages.offer.editLatte.js.delete_address})) {
+            if (adressId != ""){
+            let data = {"addressId": addressId};
+                $.nette.ajax({
+                    type: 'DELETE',
+                    url: {link setActiveAddress!},
+                    data: data,
+            });
+        }    
+            let nameButton = this.name;
+            nameButton = nameButton.replace(/remove/i, "");
+            
+            let parentsToRemove = [];
+            for (let divPart of this.parentElement.parentElement.children) {
+                for (let partOfDiv of divPart.children) {
+                    parentsToRemove.push(partOfDiv.parentElement);
+                }
+            }
+            for (let parentToRemove of parentsToRemove) {
+                parentToRemove.remove();
+            }
+        } else {
+        }
+    }
+
+    function clearAddress(addressId = "") {
+        if (confirm({_messages.offer.editLatte.js.delete_address})) {
+            if (addressId != ""){
+                let data = {"addressId": addressId};
+                    $.nette.ajax({
+                        type: 'DELETE',
+                        url: {link setActiveAddress!},
+                        data: data,
+                });
+            }    
+            let nameButton = this.name;
+            nameButton = nameButton.replace(/remove/i, "");
+            for (let divPart of this.parentElement.parentElement.children) {
+                for (let partOfDiv of divPart.children) {
+                    if (partOfDiv.name == "addAddress" || partOfDiv.name == "removeAddress" || partOfDiv.name == "activeButton" ){
+                        partOfDiv.hidden = true;
+                    }else if(partOfDiv.name == "street_house_number"){
+                              partOfDiv.removeAttribute("readonly"); 
+                              partOfDiv.value = "";
+                    }else{    
+                          partOfDiv.value = "";
+                     }     
+                    } 
+            }
+        }    
+    };
+    
+    function setActiveAddress(addressId){
+        let data = {"addressId": addressId};
+        $.nette.ajax({
+                type: 'PATCH',
+                url: {link setActiveAddress!},
+                data: data,
+                
+            });
+    };  
+    
+    function setActiveAddressNew(){
+    let chart = this.name.charAt(this.name.length-1);
+    let dives = this.parentElement.parentElement.children;
+    for (let div of dives){
+        let inputs = div.children;
+        for (let input of inputs){
+            if(input.name){
+                //let part = input.name.substring(0,input.name.length-1);
+               let part = input.name.split(/[0-9]/)[0];
+               switch(part){
+                      case "street_house_number": 
+                       console.log("street house number input:" + input.name);
+                       break;
+                       
+                       case "zip_code": 
+                       let validation = (/^[0-9A-Z]{{5}}$/);  
+                       let perfect = validation.test(input.value);
+                       if(!perfect){
+                          alert("je potřeba vyplnit správně ZipCode");  
+                       }    
+                       console.log("street house number input:" + input.name);
+                       break;
+               }
+            }
+        }    
+    }
+    };
+    
+    function setRemoveButtons(){
+        let removeAddressButtons = document.querySelectorAll('.removeAddress');
+        for(let removeAddressButton of removeAddressButtons) {
+            if (removeAddressButton.name == "removeAddress" && {$username} == '' ){
+                removeAddressButton.onclick = clearAddress;
+            } else if (removeAddressButton.name == "removeAddress" && {$username} != ''){
+                let addressId = removeAddressButton.parentElement.parentElement.querySelector("input.activeAddress").value;
+                removeAddressButton.onclick = function(){ clearAddress(addressId) };
+                removeAddressButton.removeAttribute('hidden');
+            } else {
+                if({$username} != ''){
+                    let addressId = removeAddressButton.parentElement.parentElement.querySelector("input.activeAddress").value;
+                    removeAddressButton.onclick = function() { removeAddress(addressId) };
+                    removeAddressButton.removeAttribute('hidden');
+                } else { 
+                    removeAddressButton.onclick = removeAddress;
+                    removeAddressButton.removeAttribute('hidden');
+                }     
+            }       
+        } 
+    };    
+</script>                        
+<script>
+    var formPlanIndex = 1;
+
+    function insertComplet() {
+        setRemoveButtons();
+        
+        let nextAddressButtons = document.querySelectorAll('.addAddress');
+        for (let nextAddressButton of nextAddressButtons){
+            nextAddressButton.hidden = true;
+        }
+        let inputElements = document.querySelectorAll('div.form-component:has(.formPlan)');
+        let complet = document.createElement('div');
+        complet.id = 'complet'+ formPlanIndex;
+        for (let inputElement of inputElements) {
+            if (/[0-9]+$/.test(inputElement.querySelector(".formPlan").name)) {
+                continue;
+            }
+            let clone = inputElement.cloneNode(true);
+            let formPlan = clone.querySelector(".formPlan");
+            formPlan.setAttribute('value', "");
+            formPlan.value = "";
+            formPlan.name = formPlan.name + formPlanIndex;
+            formPlan.id = formPlan.id + formPlanIndex;
+            if (formPlan.name === "street_house_number" + formPlanIndex) {
+                formPlan.removeAttribute('readonly');
+            }
+            else if (formPlan.name === "removeAddress" + formPlanIndex) {
+                formPlan.hidden = true;
+            }
+            
+            formPlan.classList.add("formPlan" + formPlanIndex);
+            formPlan.classList.remove("formPlan");
+
+            let label = clone.querySelector("label");
+            if (label) {
+                label.setAttribute("for", label.getAttribute("for") + formPlanIndex);
+            }
+            complet.appendChild(clone);
+
+        }
+       
+        let form = document.querySelector('form');
+        let phone = document.querySelector("input[name='phone']").parentElement;
+
+        form.insertBefore(complet, phone);
+        
+        let activeButton = document.querySelector('input[name="activeButton' + formPlanIndex + '"]');
+        activeButton.hidden = true;
+
+
+        let streetInput = document.querySelector("input[name='street_house_number" + formPlanIndex + "']");
+        var zipCodeInput = document.querySelector("input[name='zip_code" + formPlanIndex + "']");
+        streetInput.onchange = function () {
+            if (!zipCodeInput.value) {
+                streetInput.value = '';
+            }
+        }
+
+        window.load = function () {
+            Loader.async = true;
+            Loader.load(null, { suggest: true}, createSuggest);
+        }
+
+        window.createSuggest = function () {
+            var currentIndex = formPlanIndex;
+
+            var inputEl = document.querySelector('input[name="street_house_number' + formPlanIndex + '"].formPlan' + formPlanIndex);
+            let divParent = inputEl.parentNode.parentNode;
+            var suggest = new SMap.Suggest(inputEl);
+            var lastSuggestData = null;
+             suggest.urlParams({
+              lang: {$actualLanguageCode}
+             }); 
+            suggest.addListener("suggest", function (suggestData) {
+                // vyber polozky z naseptavace
+                lastSuggestData = suggestData;
+                $.ajax({
+                    url: "https://api.mapy.cz/v0/suggest/",
+                    type: 'GET',
+                    dataType: 'json',
+                    headers: {
+                        'x-mapy-api-key': 'virtual-421aa90e079fa326b6494f812ad13e79',
+                        'x-szn-sdk': 'HgUbCgUbGkgqAQkYBxYEHQNHQlJcQlBSQ1xbQg=='
+                    },
+                    data: {
+                        lang: {$actualLanguageCode},
+                        count: 1,
+                        phrase: suggestData.phrase
+                    },
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (result) {
+                        let countAddresses = document.querySelector('[name="countAddresses"]');
+                        countAddresses.value = currentIndex;
+                        let zipCode = result['result']['0']['userData']['zipCode'];
+                        let formComponents = divParent.children;
+                        for (let formComponent of formComponents) {
+                            let input = formComponent.querySelector('input');
+                            let address = result['result']['0']['userData']['suggestSecondRow'].split(',');
+                            let indexState = (address.length) - 1;
+                            switch (input['name']) {
+                                case "zip_code" + currentIndex:
+                                    input.setAttribute('value', zipCode);
+                                    input.value = zipCode;
+                                    break;
+                                case "city" + currentIndex:
+                                    input.setAttribute('value', address[1]);
+                                    input.value = address[1];
+                                    break;
+                                case "state" + currentIndex:
+                                    input.setAttribute('value', address[indexState]);
+                                    input.value = address[indexState];
+                                    if (input.value) {
+                                        inputEl.setAttribute('readonly', 'readonly');
+                                        let addNextAddressButton = document.querySelector('input[name="addAddress' + currentIndex + '"]');;
+                                        addNextAddressButton.value = 'addAddress'
+                                        addNextAddressButton.hidden = false;
+                                        addNextAddressButton.onclick = insertComplet;
+                                        let removeAddressButton = document.querySelector('input[name="removeAddress' + currentIndex + '"]');
+                                        removeAddressButton.value = 'removeAddress';
+                                        removeAddressButton.hidden=false;
+                                        removeAddressButton.onclick = removeAddress;
+                                        let activeButton = document.querySelector('input[name="activeButton' + currentIndex + '"]');
+                                        activeButton.hidden = false;
+                                        activeButton.value = 'nastavit jako hlavní adresu';
+                                        activeButton.onclick = setActiveAddressNew;
+                                    }
+                                    break;
+                                case "latitude" + currentIndex:
+                                    input.value = suggestData.data.latitude;
+                                    break;
+                                case "longitude" + currentIndex:
+                                    input.value = suggestData.data.longitude;
+                                    break;
+                            }
+                            if (address.length == 4) {
+                                if (input['name'] == "region" + currentIndex) {
+                                    input.value = address[2];
+                                }
+                            }
+                            if (input['name'] == "zip_code" + currentIndex) {
+
+                                input.value = zipCode;
+
+                            }
+                        }
+
+                    }
+                });
+
+
+            });
+
+
+        }
+        createSuggest();
+        formPlanIndex++;
+    }
+</script>    
+{/block}
+{* Vlastní šablona pro renderování formulářů. *}
+<form n:name=$form class="fancyform {ifset $class}{$class}{/ifset}">
+    <ul class="errors list-unstyled" n:if="$form->hasErrors()">
+        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
+    </ul>   
+    {foreach $form->controls as $input}
+        {var $button = $input->getControl()->type == 'submit'}
+        <div n:class="$button ? form-buttons : form-component">
+            {label $input /}
+            {if $input->controlPrototype->type == checkbox}
+                {input $input:}
+                {label $input: /}
+            {else}
+                {if $input->error}
+                    {input $input, class => 'invalid'}
+                {else}
+                    {input $input}
+                {/if}
+            {/if}
+            <div n:if="!$button" class="clear"></div>
+        </div>
+        {ifset $widget}
+            {if $input->getName() == $widget->after}
+                {control $widget->name}
+            {/if}
+        {/ifset}
+    {/foreach}
+</form>

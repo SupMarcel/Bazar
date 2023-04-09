@@ -1,24 +1,50 @@
 <div>
-    <strong>{$comment[$commentAuthor] |authorname}</strong>
-    <p>{$comment[$commentText]}</p>
-    <script>
-        function showForm(id){
-            var form = document.getElementById(id);
-            form.style.display = form.style.display == "none" ? "block" : "none";
-        }
-    </script>
-    <button onclick="showForm({$comment[$commentID]})">Přidat reakci</button>
-    {if $loggedIn === true}
-        <noscript>
-            {control addReactionForm}
-        </noscript>
-        <div id="{$comment[$commentID]}" style="display: none">
-            {control addReactionForm}
-        </div>
+    {if $comment != null}
+        <strong>{$comment[$commentAuthor] |authorname}</strong>
+        <span>{$comment->time}</span>
+        <p>{$comment[$commentText]}</p>
+        <script>
+            function showForm(id){
+                var form = document.getElementById(id);
+                form.style.display = form.style.display == "none" ? "block" : "none";
+            }
+        </script>
+        <button onclick="showForm({$comment->$commentID})">Přidat reakci</button>
+        {if  $user->isLoggedIn()}
+            <noscript>
+                {include $formBootstrap, form => addReactionForm}
+            </noscript>
+            <div id="{$comment->$commentID}" style="display: none">
+                {include $formBootstrap, form => addReactionForm}
+            </div>
+        {/if}
     {/if}
     <div class="reactionList">
         {foreach $reactions as $reaction}
-            {control reaction-$reaction[$commentID]}
+            {control reaction-{$reaction->id}}
         {/foreach}
     </div>
+   {if $comment == null}
+        <div class="pagination">
+            {if !$paginator->isFirst()}
+                     <a n:href="Page!, 1">První</a>
+                    &nbsp;|&nbsp;
+                    <a n:href="Page!, $paginator->page-1">Předchozí</a>
+                    &nbsp;|&nbsp;
+
+
+            {/if}
+
+            Stránka {$paginator->getPage()} z {$paginator->getPageCount()}
+
+            {if !$paginator->isLast()}
+                    &nbsp;|&nbsp;
+                    <a n:href="Page!, $paginator->getPage() + 1 ">Další</a>
+                    &nbsp;|&nbsp;
+                    <a n:href="Page!, $paginator->getPageCount()">Poslední</a>
+
+
+            {/if}
+    {/if}
+</div>
 </div>

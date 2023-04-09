@@ -18,13 +18,11 @@ class CommentManager extends BaseManager
         COLUMN_USER = 'uzivatel',
         COLUMN_TEXT = 'text',
         COLUMN_OFFER = 'nabidka',
-        COLUMN_COMMENT = 'komentar';
+        COLUMN_COMMENT = 'komentar',
+        COLUMN_TIME = 'time';
 
     public function addComment($properties){
-        $count = $this->database->table(self::TABLE_NAME)->count(self::COLUMN_ID);
-        $maxID = $this->database->table(self::TABLE_NAME)->max(self::COLUMN_ID);
-        $max = $count == 0 ? 1 : $maxID + 1;
-        $array = [self::COLUMN_ID => $max,
+        $array = [
             self::COLUMN_USER => $properties[self::COLUMN_USER],
             self::COLUMN_TEXT => $properties[self::COLUMN_TEXT],
             self::COLUMN_OFFER => $properties[self::COLUMN_OFFER],
@@ -37,8 +35,14 @@ class CommentManager extends BaseManager
             ->where(self::COLUMN_OFFER, $offer)->where(self::COLUMN_COMMENT, null);
     }
 
-    public function getDirectReactions($comment){
-        return $this->database->table(self::TABLE_NAME)->where(self::COLUMN_COMMENT, $comment);
+    public function getDirectReactions($comment = null,int $limit = null, int $offset = null){
+        return $this->database->table(self::TABLE_NAME)->where(self::COLUMN_COMMENT, $comment)
+                                                       ->order('time DESC') 
+                                                       ->limit($limit, $offset)->fetchAll();
+    }
+    
+    public function getCountReakcions($comment = null) {
+        return $this->database->table(self::TABLE_NAME)->where(self::COLUMN_COMMENT, $comment)->count('*');
     }
 
     public function getCommentsByUser($user){

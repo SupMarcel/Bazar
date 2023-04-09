@@ -1,0 +1,46 @@
+{* Latte template *}
+
+{if $noItems}
+    Zadaným kritériím neodpovídají žádné položky.
+{else}
+<div class="w-100 d-flex flex-wrap">
+{foreach $offers as $offer}
+    <a class="width14 justify-content-between" href="{plink Offer:detail $offer[$offerID]}">
+        <div class="card width14 border border-dark">
+            <div class="card-header">
+                <h2 style="font-size: 1rem; height:6rem">{$offer[$title]}</h2>
+                <img style="height: 10rem" src="{$basePath}/images/offers/{$offer['photoPath']}">
+            </div>
+            <div class="card-body">
+                <span class="d-block">{$offer[$price]} Kč</span>
+                <span class="d-block">{$offer['offerOwnerName']}</span>
+                {if $username != ""}
+                    <span class="d-block">{$offer['distance']}km</span>
+                {/if}
+            </div>
+        </div>
+    </a>
+{/foreach}
+</div>
+<div class="pagination">
+	{if !$paginator->isFirst()}
+		<a href="{plink Offer:list, 1(expand) $urlParameters}">První</a>
+		&nbsp;|&nbsp;
+		<a href="{plink Offer:list, $paginator->page-1(expand) $urlParameters}">Předchozí</a>
+		&nbsp;|&nbsp;
+                
+                
+	{/if}
+
+	Stránka {$paginator->getPage()} z {$paginator->getPageCount()}
+
+	{if !$paginator->isLast()}
+		&nbsp;|&nbsp;
+		<a href="{plink Offer:list, $paginator->getPage() + 1 (expand) $urlParameters}">Další</a>
+		&nbsp;|&nbsp;
+		<a href="{plink Offer:list, $paginator->getPageCount()(expand) $urlParameters}">Poslední</a>
+                
+              
+	{/if}
+</div>
+{/if}

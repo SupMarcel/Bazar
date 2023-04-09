@@ -3,6 +3,8 @@
 # https://nette.org/security-warning
 #
 parameters:
+        FOLDER_FOR_OFFER_PICTURES: 'images/offers/'
+        FOLDER_FOR_CATEGORY_PICTURES: 'images/categories/'
 
 
 application:
@@ -14,9 +16,24 @@ application:
 session:
 	expiration: 14 days
 
+security:
+	authentication:
+		# po jak dlouhé době nečinnosti bude uživatel odhlášen
+		expiration: "14 days"
+	roles:
+		guest:
+		NORMALUSER: [guest]
+		admin:        
+        
 
+extensions:
+	translation: Contributte\Translation\DI\TranslationExtension
 
-
-
-
-
+translation:
+	locales:
+		whitelist: [en, cs]
+		default: en
+		fallback: [cs, en]
+	dirs:
+		- %appDir%/lang
+	returnOriginalMessage: true

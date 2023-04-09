@@ -1,7 +1,14 @@
 {* Vlastní šablona pro renderování formulářů. *}
+{block head}
+    <link rel="stylesheet" href="{$basePath}/css/forms.css">
+{/block}
 <form n:name=$form class="fancyform {ifset $class}{$class}{/ifset}">
+ <ul class="errors list-unstyled" n:if="$form->hasErrors()">
+        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
+ </ul> 
+ <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>       
 {foreach $form->controls as $input}
-    {var $button = $input->getControl()->type == 'submit'}
+    {var $button = $input->controlPrototype->type == 'submit'}
     <div n:class="$button ? form-buttons : form-component">
         {label $input /}
         {if $input->controlPrototype->type == checkbox}

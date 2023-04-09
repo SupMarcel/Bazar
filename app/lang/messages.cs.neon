@@ -1,0 +1,80 @@
+key: "Hodnota"
+English: "Angličtina"
+Czech: "Čeština"
+
+user:
+    user_name: "uživatelské jméno"
+    password: "heslo"
+    email: "e-mail"
+    phone: "telefon"
+    firstname: "křestní jméno"
+    lastname: "příjmení"
+    city: "město"
+    opening_hours: "otvírací doba"
+    note: "poznámka"
+    role: "role"
+    genders: "pohlaví"
+    icon: "ikona"
+    email_subscription: "e-mailový odběr"
+    active_address_id: "aktuální aktivní adresa"
+
+address:
+    street_house_number: "ulice a číslo domu"
+    region: "kraj"
+    city: "obec"
+    state: "stát"
+    zip_code: "PSČ"
+    latitude: "latituda"
+    longitude: "longituda"
+
+homepage:
+    title: "Domovská stránka"
+
+sign:
+    inLatte:
+        homepage: "Domovská stránka"
+        log_in: "Přihlásit se"  
+        no_account_sign_up: "Ještě tu nemáte účet ? Zaregistrujte se!"
+
+offer:
+    manage:
+        offerPrice: "%price% Kč"
+    editLatte:
+        js:
+            delete_address: "Opravdu chcete smazat tuto adresu?"
+
+offerImagesControl:
+    default:
+        mainPhoto: "Hlavní fotografie"
+        changeMainPhoto: "Nastavit jako hlavní fotku"
+        deletePhoto: "Odstranit"
+
+FormFactory:
+    fill_field: "Vyplňte všechna pole formuláře"
+    
+editForm:
+    choose from suggest: "vyberte z navrhované adresy"
+    man: "muž"
+    woman: "žena"
+    change data: "změnit údaje"
+    fill your email: "Prosím vyplňte toto pole Vaší emailovou adresou"
+    choose a password: "Prosím vyberte si heslo"
+
+registrationForm:
+    minLength: "minimální délka hesla musí být nejméně %min% znaků"
+    to register: "Registrovat se"
+    busy username: "Toto uživatelské jméno je již obsazené. Prosím zvolte si jiné uživatelské jméno."
+
+signInForm:
+    enter_password: "Prosím vložte Vaše heslo !"
+    Keep_signed: "Zůstat přihlášen"
+    Sign_in: "Přihlásit"
+    username_incorrect: "Uživatelské jméno nebo heslo není správně !"
+    Remember_me: "Zapamatovat si mě"
+
+modelEmailTemplates:
+    addCommentLatte:
+        Adding_comment : "Přidání komentáře k Vaší položce ve Vašem účtu Bubovický bazar"
+
+comentAndOfferManager:
+        Adding_comment: "Přidání komentáře k Vaší položce ve Vašem účtu Bubovický bazar"

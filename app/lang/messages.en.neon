@@ -1,0 +1,83 @@
+key: "Value"
+English: "English"
+Czech: "Czech"
+
+user:
+    user_name: "user name"
+    password: "password"
+    email: "email"
+    phone: "phone"
+    firstname: "firstname"
+    lastname: "lastname"
+    city: "city"
+    opening_hours: "opening hours"
+    note: "note"
+    role: "role"
+    genders: "genders"
+    icon: "icon"
+    email_subscription: "email subscription"
+    active_address_id: "actual active address"
+
+address:
+    street_house_number: "street and house number"
+    region: "region"
+    city: "city"
+    state: "state"
+    zip_code: "zip code"
+    latitude: "latitude"
+    longitude: "longitude"
+
+homepage:
+    title: "Homepage"
+
+sign:
+    inLatte:
+        homepage: "Homepage"
+        log_in: "Log in"  
+        no_account_sign_up: "Don't have an account here yet? Sign up!"
+
+    outLatte: 
+        log_out: "Log out"
+
+offer:
+    manage:
+        offerPrice: "%price% CZK"
+    editLatte:
+        js:
+            delete_address: "Do you really want to delete this address?"
+
+offerImagesControl:
+    default:
+        mainPhoto: "Main photo"
+        changeMainPhoto: "Set as main photo"
+        deletePhoto: "Delete"
+
+FormFactory:
+    fill_field: "Fill in all fields of the form!"
+
+editForm:
+    choose from suggest: "choose from suggest"
+    man: "man"
+    woman: "woman"
+    change data: "change data"
+    fill your email: "Please fill in the field with your email"
+    choose a password: "Please choose a password"
+
+registrationForm:
+    minLength: "minimum length for your password is %min% characters"
+    to register: "To register"
+    busy username: "This username is already taken. Please choose a different username."
+
+signInForm:
+    enter_password: "Please enter your password."
+    Keep_signed: "Keep me signed in"
+    Sign_in: "Sign in"
+    username_incorrect: "The username or password you entered is incorrect."
+    Remember_me: "Remember me"
+    
+modelEmailTemplates:
+    addCommentLatte:
+        Adding_comment : "Adding a comment to your item in your Bubovicky Bazar account"
+
+comentAndOfferManager:
+        Adding_comment: "Adding a comment to your item in your Bubovicky Bazar account"

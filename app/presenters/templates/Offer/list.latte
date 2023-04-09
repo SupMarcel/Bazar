@@ -45,17 +45,15 @@
             <li class="breadcrumb-item active">Seznam nabídek</li>
         {/if}
         {if $noCategory === false}
-            <li class="breadcrumb-item"><a n:href="Offer:list">Seznam nabídek</a></li>
+            <li class="breadcrumb-item"><a n:href="Offer:list null, 'all'">Seznam nabídek</a></li>
         {/if}
-        {foreach $parentCategories as $parentCategory}
-        {/foreach}
         {if $noCategory === false}
             {foreach $parentCategories as $parentCategory}
                 {if $parentCategory['last'] === true}
                     <li class="breadcrumb-item active">{$parentCategory['title']}</li>
                 {/if}
                 {if $parentCategory['last'] === false}
-                    <li class="breadcrumb-item"><a n:href="Offer:list $parentCategory['id']">{$parentCategory['title']}</a></li>
+                    <li class="breadcrumb-item"><a n:href="Offer:list null, $parentCategory['id']">{$parentCategory['title']}</a></li>
                 {/if}
             {/foreach}
         {/if}
@@ -64,7 +62,7 @@
 <ul class="list-unstyled d-flex flex-wrap">
     {foreach $categories as $id => $category}
         <li class="border border-dark sizeByMedia justify-content-between bg-light-yellow">
-            <a n:href="Offer:list $id" class="all m-0 p-3 d-block">
+            <a n:href="Offer:list null, $id" class="all m-0 p-3 d-block">
 
                 {if $category["image"] != ""}
                     <img height="40" src="{$basePath}/images/categories/{$category["image"]}">
@@ -74,63 +72,10 @@
         </li>
     {/foreach}
 </ul>
-{form filterForm}
-    <ul class="errors list-unstyled" n:if="$form->hasErrors()">
-        <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
-    </ul>
-    <div class="form-group w-25 d-inline-block">
-        <label>{label priceFrom /}</label>
-        <input type="number" min="0" class="form-control" n:name=priceFrom>
-        {inputError priceFrom}
-    </div>
-    <div class="form-group w-25 d-inline-block">
-        <label>{label priceTo/}</label>
-        <input type="number" min="0" class="form-control" n:name=priceTo>
-        {inputError priceTo}
-    </div>
-    <div class="form-group w-25 d-inline-block">
-        {input cities}
-        {inputError cities}
-    </div>
-    <input class="btn btn-primary" type="submit" n:name=search value="Vyhledat nabídky">
-{/form}
-{if $noItems}
-Zadaným kritériím neodpovídají žádné položky.
-{else}
-<div class="w-100 d-flex flex-wrap">
-{foreach $offers as $offer}
-    <a class="width14 justify-content-between" n:href="Offer:detail $offer['id']">
-        <div class="card width14 border border-dark">
-            <div class="card-header">
-                <h2 style="font-size: 1rem; height:6rem">{$offer[$title]}</h2>
-                <img style="height: 10rem" src="{$basePath}/images/offers/{$offer[$image]}">
-            </div>
-            <div class="card-body">
-                <span class="d-block">{$offer[$price]} Kč</span>
-                <span class="d-block">{$offer[$offerOwner] |cityName}</span>
-            </div>
-        </div>
-    </a>
-{/foreach}
-</div>
-<div class="pagination">
-    {if $page > 1}
-        <a href="{$linkToFirst}">První</a>
-        &nbsp;|&nbsp;
-        <a href="{$linkToPrevious}">Předchozí</a>
-        &nbsp;|&nbsp;
-    {/if}
+{include $formPathInLine, form => filterForm}
 
-    Stránka {$page} z {$lastPage}
+{control offerFilter}
 
-    {if $page < $lastPage}
-        &nbsp;|&nbsp;
-        <a href="{$linkToNext}">Další</a>
-        &nbsp;|&nbsp;
-        <a href="{$linkToLast}">Poslední</a>
-    {/if}
-</div>
-{/if}
 </body>
 
 </html>

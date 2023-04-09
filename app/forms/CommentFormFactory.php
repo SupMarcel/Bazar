@@ -13,42 +13,30 @@ use App\Model\CommentAndOfferManager;
 use App\Model\CommentManager;
 use Nette\Forms\Form;
 
-class CommentFormFactory
+
+class CommentFormFactory extends FormFactory
 {
-    /** @var FormFactory */
-    private $factory;
     /** @var  CommentAndOfferManager */
     private $commentAndOfferManager;
-    private $user;
-    private $offer;
-    private $reaction;
 
-    public function __construct(FormFactory $formFactory,
-        CommentAndOfferManager $commentAndOfferManager){
-        $this->factory = $formFactory;
-        $this->commentAndOfferManager = $commentAndOfferManager;
-        $this->user = null;
-        $this->offer = null;
-        $this->reaction = null;
+    public function __construct(CommentAndOfferManager $commentAndOfferManager){
+        $this->commentAndOfferManager = $commentAndOfferManager;;
     }
 
-    public function create($user, $offer, $reaction = null){
-        $this->user = $user;
-        $this->reaction = $reaction;
-        $this->offer = $offer;
-        $form = $this->factory->create();
+    public function createFormComment($userId, $offerId, $commentId = null){
+        $form = $this->create();
         $form->addTextArea("text","Text");
-        if($reaction === null){
+        if($commentId === null){
             $form->addSubmit("addComment", "Přidej komentář");
         } else {
             $form->addSubmit("addReaction", "Přidej reakci");
         }
-        $form->onSuccess[] = function(Form $form, $values){
+        $form->onSuccess[] = function(Form $form, $values) use($userId, $offerId, $commentId) {
             $array = [
                 CommentManager::COLUMN_TEXT => $values["text"],
-                CommentManager::COLUMN_OFFER => $this->offer,
-                CommentManager::COLUMN_USER => $this->user,
-                CommentManager::COLUMN_COMMENT => $this->reaction
+                CommentManager::COLUMN_OFFER => intval($offerId),
+                CommentManager::COLUMN_USER => $userId,
+                CommentManager::COLUMN_COMMENT => $commentId
             ];
             $this->commentAndOfferManager->addComment($array);
         };

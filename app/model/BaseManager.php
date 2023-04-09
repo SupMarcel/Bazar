@@ -35,9 +35,9 @@ class BaseManager
         return $this->database->table(static::TABLE_NAME)->get($id);
     }
 
-    public function getAll(){
-        return $this->database->table(static::TABLE_NAME);
-    }
+    public function getAll(int $limit = null, int $offset = null){
+        return $this->database->table(static::TABLE_NAME)->limit($limit, $offset);
+    }                         
 
     public function remove($id){
         $this->database->table(static::TABLE_NAME)->where(static::COLUMN_ID, $id)->delete();
