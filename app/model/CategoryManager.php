@@ -79,7 +79,7 @@ class CategoryManager extends BaseManager
        $categories->order(self::COLUMN_TITLE); // Seřadí výsledek.
        return $this->formatTree($categories->fetchAll(), null); // Vratí výsledný strom.
    }
-   public function breadcrumb($categoryID) {
+    public function breadcrumb($categoryID) {
         $parentCategories = array();
         if(!empty($categoryID)){
             $category = $this->get($categoryID);

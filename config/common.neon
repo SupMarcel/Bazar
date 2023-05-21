@@ -4,7 +4,6 @@
 #
 parameters:
         FOLDER_FOR_OFFER_PICTURES: 'images/offers/'
-        FOLDER_FOR_CATEGORY_PICTURES: 'images/categories/'
 
 
 application:

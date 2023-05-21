@@ -13,6 +13,7 @@ use App\Model\OfferManager;
 use App\Model\UserManager;
 use App\Model\AddressManager;
 use App\Model\PhotoManager;
+use Nette\Localization\ITranslator;
 /**
  * Description of FilterService
  *
@@ -24,17 +25,19 @@ class FilterService {
     private $userManager;
     private $addressManager;
     private $photoManager;
+    protected $translator;
     
     public function __construct(CategoryManager $categoryManager, OfferManager $offerManager,
-                                UserManager $userManager, AddressManager $addressManager, PhotoManager $photoManager   ) {
+                                UserManager $userManager, AddressManager $addressManager, PhotoManager $photoManager, ITranslator $translator  ) {
         $this->categoryManager = $categoryManager;
         $this->offerManager = $offerManager;
         $this->userManager = $userManager;
         $this->addressManager = $addressManager;
         $this->photoManager = $photoManager;
+        $this->translator = $translator;
     }
     
-    public function getCategoriesForSelect($params = null, $latitude2 = null, $longitude2 = null) {
+  /*  public function getCategoriesForSelect($params = null, $latitude2 = null, $longitude2 = null) {
        $array = [0 =>'všechny kategorie'];
        if(!empty($params[OfferManager::COLUMN_CATEGORY])){
             $categories = $this->categoryManager->getSubcategoriesWithCategory($params[OfferManager::COLUMN_CATEGORY]);
@@ -67,8 +70,73 @@ class FilterService {
                 }
             }
         }
+        $translatedArray = [0 =>$this->translator->translate('messages.category.all_categories')];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $translatedSubcategories = [];
+                foreach ($value as $subKey => $subValue) {
+                    if (preg_match('/(.*)\s\((\d+)\)/', $subValue, $matches)) {
+                        $translationKey = $matches[1];
+                        $count = $matches[2];
+
+                        $translatedKey = $this->translator->translate("messages.category.".trim($translationKey));
+                        $translatedSubcategories[$subKey] = $translatedKey . " ($count)";
+                    }
+                }
+                $translatedArray[$key] = $translatedSubcategories;
+                
+            } else {
+                if (preg_match('/(.*)\s\((\d+)\)/', $value, $matches)) {
+                    $translationKey = $matches[1];
+                    $count = $matches[2];
+                    $translatedKey = $this->translator->translate('messages.category.'.trim($translationKey));
+
+                    $translatedArray[$key] = $translatedKey . " ($count)";
+                }
+            }
+        }
+        return $translatedArray;
+    }*/
+    
+    public function getCategoriesForSelect($params = null, $latitude2 = null, $longitude2 = null) {
+        $array = [0 =>'všechny kategorie'];
+        if(!empty($params[OfferManager::COLUMN_CATEGORY])){
+                    $categories = $this->categoryManager->getSubcategoriesWithCategory($params[OfferManager::COLUMN_CATEGORY]);
+                    if(!empty($categories)){
+                        array_push($categories, $this->categoryManager->get($params[OfferManager::COLUMN_CATEGORY])); 
+                    }
+               } else{
+                    $categories = $this->categoryManager->getAll();
+               }
+        foreach ($categories as $category){
+            $subcategories = $this->categoryManager->getSubcategories($category->{CategoryManager::COLUMN_ID});
+            $categoryCount = 0;
+            $arr = [];
+            $translatedCategoryTitle = $this->translator->translate('messages.category.'.trim($category->{CategoryManager::COLUMN_TITLE}));
+
+            foreach ($subcategories as $subcategory){
+                $subcategoryCount = $this->getCountByDistance($params, $latitude2, $longitude2, $subcategory->{CategoryManager::COLUMN_ID});
+                $translatedSubcategoryTitle = $this->translator->translate('messages.category.'.trim($subcategory->{CategoryManager::COLUMN_TITLE}));
+                if ($subcategoryCount > 0){
+                    $arr[$subcategory->{CategoryManager::COLUMN_ID}] = "...".$translatedSubcategoryTitle."  (".$subcategoryCount.")";
+                    $categoryCount += $subcategoryCount;
+                }
+            }
+            if ($categoryCount > 0 || (count($categories) == 2 )){
+                if (count($categories) == 2) {
+                    $categoryCount = $this->getCountByDistance($params, $latitude2, $longitude2, $category->{CategoryManager::COLUMN_ID});
+                }
+                $array[$category->{CategoryManager::COLUMN_ID}] = $translatedCategoryTitle."  (".$categoryCount.")";
+
+                foreach ($arr as $subcategoryId => $subcategory){
+                    $array[$subcategoryId] = $subcategory;
+                }
+            }
+        }
+
         return $array;
     }
+
    
    private function getDistanceBetweenPointsNew($latitude1, $longitude1, $latitude2, $longitude2, $unit = 'kilometers') {
         $theta = $longitude1 - $longitude2; 
@@ -119,8 +187,9 @@ class FilterService {
                     } else if (!isset($active['countOffers'])) {
                         $activeCategories[$key] = $active;
                     } else {
+                        array_push($ActiveSubcategories, $active);
                         array_push($activeCategories,$active);
-                      }
+                    }
                 }
             }
             array_push($ActiveSubcategories, $activeCategories);
@@ -129,7 +198,11 @@ class FilterService {
     }
     
     public function getcountWithSubcategories($parameters = null) {
-        $subcategories = $this->categoryManager->getSubcategories($parameters[OfferManager::COLUMN_CATEGORY]);
+        if(!empty($parameters[OfferManager::COLUMN_CATEGORY])){
+            $subcategories = $this->categoryManager->getSubcategories($parameters[OfferManager::COLUMN_CATEGORY]);
+        }else{
+              $subcategories = $this->categoryManager->getSubcategories(null);   
+         }
         $allCategories = [];
         foreach ($subcategories as $subcategory) {
             $categories = $this->categoryManager->getSubcategories($subcategory->{CategoryManager::COLUMN_ID});

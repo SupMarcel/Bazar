@@ -33,15 +33,12 @@ class PhotoManager extends BaseManager
     private $arrayOldPhotoName = [];
     
     public string $FOLDER_FOR_OFFER_PICTURES;
-    public string $FOLDER_FOR_CATEGORY_PICTURES;
     
-    public function __construct(string $folderForOfferPicture, string $folderForCategoryPicture, Nette\Database\Explorer $database)
+    public function __construct(string $folderForOfferPicture,  Nette\Database\Explorer $database)
     {
         parent::__construct($database);
         $this->FOLDER_FOR_OFFER_PICTURES = $folderForOfferPicture;
         FileSystem::createDir($this->FOLDER_FOR_OFFER_PICTURES);
-        $this->FOLDER_FOR_CATEGORY_PICTURES = $folderForCategoryPicture;
-        FileSystem::createDir($this->FOLDER_FOR_CATEGORY_PICTURES);
     }    
 
     public function getPhotosByOffer($offer){

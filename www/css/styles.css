@@ -1,0 +1,103 @@
+.menuItem {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.menuItem:hover,
+.menuItem:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
+.navbar .dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+}
+
+.navbar-inner {
+  overflow: visible; /* Umožňuje zobrazení obsahu mimo rámeček .navbar-inner */
+}
+
+.dropdown-menu {
+  z-index: 1000; /* Zvyšuje z-index rozbalovacího menu, aby bylo viditelné nad ostatními prvky */
+}
+
+/* Základní nastavení pro .span3 */
+.span3 {
+  float: left;
+  min-height: 1px;
+  margin-left: 20px;
+}
+
+/* CSS pro zařízení s velkou obrazovkou */
+@media (min-width: 1200px) {
+  .span3 {
+    width: 25%;
+  }
+}
+
+/* CSS pro střední zařízení */
+@media (min-width: 980px) and (max-width: 1199px) {
+  .span3 {
+    width: 25%;
+  }
+}
+
+
+/* CSS pro tablety */
+@media (min-width: 768px) and (max-width: 979px) {
+  .span3 {
+    width: 35% !important; 
+  }
+}
+
+/* CSS pro mobilní telefony */
+@media (max-width: 767px) {
+  .span3 {
+    width: 50% !important; 
+  }
+}
+
+ .custom-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .custom-card-header,
+        .custom-card-footer {
+            flex-shrink: 0;
+        }
+
+        .custom-card-body {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .custom-card-body img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }

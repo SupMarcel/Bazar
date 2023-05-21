@@ -6,7 +6,7 @@ services:
     - App\Model\CityManager
     - App\Model\CommentManager
     - App\Model\OfferManager
-    - App\Model\PhotoManager(%FOLDER_FOR_OFFER_PICTURES%,%FOLDER_FOR_CATEGORY_PICTURES%)
+    - App\Model\PhotoManager(%FOLDER_FOR_OFFER_PICTURES%)
     - App\Model\ReportManager
     - App\Model\UserManager
     - App\Model\CommentAndOfferManager

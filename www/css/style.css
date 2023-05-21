@@ -159,88 +159,305 @@ form .error {
 	background-color: #eaffea;
 }
 
-.custom-list-item {
-            flex: 1 0 calc(33.3333% - 20px);
-            max-width: calc(33.3333% - 20px);
-            margin: 10px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
+.navbar .brand {
+    display: block;
+    float: left;
+    padding: 10px 20px 10px;
+    margin-left: -20px;
+    font-size: 20px;
+    font-weight: 200;
+    color: #777;
+    text-shadow: 0 1px 0 #fff
+}
 
-        .custom-list-item :hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-            text-decoration: none !important;
-        }
-        
-         .custom-list-item a:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-            text-decoration: none !important;
-        }
+.celestial-logo {
+    font-family: 'Great Vibes', cursive;
+    font-size: 4rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+    color: #ffffff;
+    text-decoration: none;
+}
 
-        .custom-card {
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+.market-tagline {
+    font-family: 'Great Vibes', cursive;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: #ffffff;
+    text-decoration: none;
+    display: block; /* Přidáno pro zobrazení nápisu pod logem */
+    margin-top: -2rem; /* Přidáno pro snížení vzdálenosti mezi logem a nápisem */
+}
+
+/* Přidání efektu přechodu pro změnu barvy písmo při najetí myší */
+.celestial-logo:hover {
+    color: #ffc107;
+    transition: color 0.3s;
+}
+
+.navbar-brand {
+    padding-top: 0 rem; /* Zmenšení odsazení od horního okraje navbaru */
+    padding-bottom: 0 rem; /* Zmenšení odsazení od spodní hrany navbaru */
+}
+
+.navbar {
+    padding-top: 0;
+    padding-bottom: 0;
+    border-radius: 5px;
+}
+
+.navbar-dark .navbar-nav .nav-link svg {
+    fill: #ffffff;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-toggler {
+    background-color: transparent;
+    border: none;
+}
+
+.navbar-toggler:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.push-right {
+    margin-left: auto;
+}
+
+.menuItem {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.menuItem:hover,
+.menuItem:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
+.navbar .dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+}
+
+.navbar-inner {
+  overflow: visible; /* Umožňuje zobrazení obsahu mimo rámeček .navbar-inner */
+}
+
+.dropdown-menu {
+  z-index: 1000; /* Zvyšuje z-index rozbalovacího menu, aby bylo viditelné nad ostatními prvky */
+}
+
+/* Základní nastavení pro .span3 */
+.span3 {
+  float: left;
+  min-height: 1px;
+  margin-left: 20px;
+}
+
+/* CSS pro zařízení s velkou obrazovkou */
+@media (min-width: 1200px) {
+  .span3 {
+    width: 25%;
+  }
+}
+
+/* CSS pro střední zařízení */
+@media (min-width: 980px) and (max-width: 1199px) {
+  .span3 {
+    width: 25%;
+  }
+}
+
+
+/* CSS pro tablety */
+@media (min-width: 768px) and (max-width: 979px) {
+  .span3 {
+    width: 35% !important; 
+  }
+}
+
+/* CSS pro mobilní telefony */
+@media (max-width: 767px) {
+  .span3 {
+    width: 50% !important; 
+  }
+}
+
+ .custom-card {
+            display: flex;
+            flex-direction: column;
             height: 100%;
-            
-        }
-
-        .custom-card:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
             text-decoration: none !important;
+            color: black;
         }
 
-        .custom-card-header {
-            overflow: hidden;
-            height: 80%;
-        }
-
-        .custom-card-header img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 5px 5px 0 0;
-        }
+        .custom-card-header
+         {
+            flex-shrink: 0;
+            border-top: none;
+            border-bottom: none;
+            font-size: 1rem;
+            text-decoration: none !important;
+         }
+         
+         .custom-card-header h5 {
+           text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);  
+         }
+         
+        .custom-card-footer {
+            flex-shrink: 0;
+            border-top: none;
+            border-bottom: none;
+            font-size: 1rem;
+            text-decoration: none !important;
+         }
 
         .custom-card-body {
-            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            background-color:rgba(0,0,0,.03);
+        }
+
+        .custom-card-body img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .custom-list-item {
+            text-decoration: none !important;
+            background-color:rgba(0,0,0,.03);
+            color:black;
         }
         
-        .custom-card-body:hover {
-            padding: 1rem;
-        }
-
-        .custom-card-body span {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
+        .card-body {
+            padding: 0px;
+            border-color: grey;
+        } 
         
-
-        .offer-col {
-            flex: 1 0 calc(33.3333% - 20px);
-            max-width: calc(33.3333% - 20px);
-            padding: 0;
-            margin: 10px;
+        .show-item div span {
+            padding-left: 1rem;
+            padding-right: 0rem;
         }
         
-        .offer-col a:hover {
-             text-decoration: none;
+        .show-item div {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            background-image: url('../images/stripe2.jpg');
         }
+        
+        .category {
+            background-image: url('../images/stripe4.png'); 
+        }  
+        
+        .offers {
+            background-image: url('../images/stripe4.png');
+        }
+        
+        .fa-chevron-right span {
+            font-family: Arial, Verdana, sans-serif;
+            color: black;
+            text-decoration: none;
+        }
+        
+        
+        .show-item div:hover {
+           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
+           background-color: rgba(0,0,0,.05);
+           background-image: none;
+        }
+        
+        .no-wrap {
+            white-space: nowrap;
+        }
+        
+        .fa-chevron-right span:hover {
+         padding-left: 2rem;   
+        }
+        
+        .card-header:hover{
+            
+        }
+        
+       .carousel-item, .img-thumbnail {
+            background-color: #808080;
+          }
 
-        @media (max-width: 992px) {
-            .custom-list-item,
-            .offer-col {
-                flex: 1 0 calc(50% - 20px);
-                max-width: calc(50% - 20px);
+          .carousel-item img, .img-thumbnail {
+            object-fit: contain;
+            border: 1px solid #333;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+          }
+
+          .carousel-item {
+                height: 50vh;  /* Nastavte pevnou výšku karuselu na 50% výšky okna prohlížeče */
+                align-items: center;
+                justify-content: center;
             }
-        }
 
-        @media (max-width: 576px) {
-            .custom-list-item,
-            .offer-col {
-                flex: 1 0 100%;
-                max-width: 100%;
+            .carousel-item img {
+                max-height: 100%;
+                width: auto;
             }
-        }
+
+            .img-thumbnail {
+                height: 10vw; /* Adjust based on your needs */
+                width: 10vw; /* Adjust based on your needs */
+            }
+          
+          .carousel-item img {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-height: 100%;
+                width: auto;
+                border: solid 2px #808080; /* Rámeček kolem obrázku */
+            }
+            
+            #hoverImageContainer .carousel-item {
+                /* Same styles as .carousel-item */
+                height: 50vh;
+                align-items: center;
+                justify-content: center;
+                background-color: #808080;
+            }
+
+            #hoverImageContainer .carousel-item img {
+                /* Same styles as .carousel-item img */
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-height: 100%;
+                width: auto;
+                border: solid 2px #808080;
+            }

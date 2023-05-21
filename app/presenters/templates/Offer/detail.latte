@@ -32,7 +32,7 @@
         </ul>
     </div>
     <div class="w-100 d-block clear-both">
-        <img id="mainPhoto" class="w-50 float-left" src="{$basePath}/images/offers/{$offer[$mainPhoto]}">
+        <img id="mainPhoto" class="w-50 float-left" src="{$basePath}/images/offers/{$offer->{'photo'}->{'path'}}">
         <p>{$offer[$description]}</p>
     </div>
     <script>
@@ -43,7 +43,7 @@
     </script>
     <div class="w-100 d-flex flex-wrap">
         {foreach $images as $image}
-            <img height="50" onclick="changeImage({$basePath}, {$image->{$tabPhoto}->{$imagePath}})" src="{$basePath}/images/offers/{$image->{$tabPhoto}->{$imagePath}}">
+            <img height="50" onclick="changeImage({$basePath}, {$image}->{'photo'}->{'path'})" src="{$basePath}/images/offers/{$image->{'photo'}->{'path'}}">
         {/foreach}
     </div>
     <div class="w-100 d-flex flex-wrap">

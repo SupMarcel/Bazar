@@ -1,0 +1,27 @@
+{* Latte template *}
+<ul class="breadcrumb">
+    <li class="breadcrumb-item">
+        {if $noCategory === true}
+            {_messages.breadcrumb.list_of_offers}
+        {else}
+            <a n:href="ChangeCategory! null">{_messages.breadcrumb.list_of_offers}</a>
+        {/if}
+    </li>
+
+    {if $noCategory === false}
+        {foreach $parentCategories as $parentCategory}
+            <li class="breadcrumb-item">
+                {var $parentTitleMessage = "messages.category." . $parentCategory['title']}
+                {if $parentCategory['last'] == "" || isset($offerTitle)}
+                    <a n:href="ChangeCategory! $parentCategory['id']">{$parentTitleMessage|translate}</a>
+                {else}
+                    {$parentTitleMessage|translate}
+                {/if}
+            </li>
+        {/foreach}
+    {/if}
+
+    {if isset($offerTitle)}
+        <li class="breadcrumb-item active">{$offerTitle}</li>
+    {/if}
+</ul>

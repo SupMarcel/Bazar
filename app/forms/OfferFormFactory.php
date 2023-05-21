@@ -110,28 +110,41 @@ class OfferFormFactory extends FormFactory
         return $citiesForForm;
     }
 
-    public function createFilterForm($parameters,$user = null){
+    public function createFilterForm($parameters, $latitude2 = null, $longitude2= null ){
         $form = $this->create();
-        if(!empty($user)){
-            $latitude2 = $user->active_address->{Model\AddressManager::COLUMN_LATITUDE};
-            $longitude2 = $user->active_address->{Model\AddressManager::COLUMN_LONGITUDE};
+        if(!empty( $latitude2 && $longitude2)){
             $categories = $this->filterService->getCategoriesForSelect($parameters, $latitude2 , $longitude2);
         }else{
              $categories = $this->filterService->getCategoriesForSelect($parameters);
         }
-        $form->addSelect(Model\OfferManager::COLUMN_CATEGORY, 'V kategorii:', $categories);
-        $form->addText(Model\OfferManager::COLUMN_TITLE , 'text v titulku');
-        $form->addInteger('min'.Model\OfferManager::COLUMN_PRICE, "Cena od");
-        $form->addInteger('max'.Model\OfferManager::COLUMN_PRICE, 'Cena do');
+        $form->addSelect(Model\OfferManager::COLUMN_CATEGORY, $label=null, $categories)
+             ->setHtmlAttribute('class', 'form-control')
+             ->setDefaultValue(!empty($parameters['category']) ? $parameters['category'] : 0);
+        $form->addText(Model\OfferManager::COLUMN_TITLE )
+             ->setDefaultValue(!empty($parameters['title']) ? $parameters['title'] : null)   
+             ->setHtmlAttribute('placeholder', 'text v titulku')
+             ->setHtmlAttribute('class', 'form-control');
+        $form->addInteger('min'.Model\OfferManager::COLUMN_PRICE)
+             ->setDefaultValue(!empty($parameters['min']) ? $parameters['min'] : null)   
+             ->setHtmlAttribute('placeholder', 'cena od')
+             ->setHtmlAttribute('class', 'form-control');
+        $form->addInteger('max'.Model\OfferManager::COLUMN_PRICE)
+             ->setDefaultValue(!empty($parameters['max']) ? $parameters['max'] : null)   
+             ->setHtmlAttribute('placeholder', 'cena do')
+             ->setHtmlAttribute('class', 'form-control');
         if(!empty($user)){
             if (!empty($parameters['distance'])){
-                $form->addInteger('distance', 'V mém okolí do tohoto počtu km')
-                     ->setDefaultValue($parameters['distance']) ;  
+                $form->addInteger('distance')
+                     ->setDefaultValue($parameters['distance']) 
+                     ->setHtmlAttribute('placeholder', 'maximální vzdálenost')
+                     ->setHtmlAttribute('class', 'form-control');
             }else{
-                 $form->addInteger('distance', 'V mém okolí do tohoto počtu km');
+                 $form->addInteger('distance')
+                      ->setHtmlAttribute('placeholder', 'maximální vzdálenost')
+                      ->setHtmlAttribute('class', 'form-control');
              }
         }     
-        $form->addSubmit('search', 'Vyhledat nabídky');
+        $form->addSubmit('search', 'Vyhledat nabídky')->setHtmlAttribute('class', 'btn btn-primary');
         return $form;
     }
 

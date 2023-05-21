@@ -27,6 +27,50 @@ address:
     latitude: "latitude"
     longitude: "longitude"
 
+base:
+    layoutLatte:
+        homepage: "Home"
+        my_control_panel: "My Control Panel"
+        my_sales: "My Sales"
+        my_purchases: "My Purchases"
+        message_center: "Message Center"
+        settings: "Settings"
+        log_out: "Log Out"
+        logged_in_as: "Logged in as"
+        register: "Register"
+        sign_in: "Sign In"
+
+FooterLinks:
+    focusBazaar:
+        heading: "Focus Bazaar"
+        content: "This bazaar is an alternative to regional flea markets and garden bazaars. Nowadays, in the era of the internet, it's easy to take a photo of an item and post it with a description on these pages! You can actually use a virtual flea market that isn't limited in time, as is the case with the physical one. This regional bazaar has its specifics compared to other bazaar servers. It assumes that the potential buyer will stop by personally to inspect the item and then pay you. This eliminates the big hassle of how to pack the item, the cost of postage and cash on delivery, going to the post office and standing in line, and last but not least, the elimination of problems with complaints about the item or non-receipt of the item by the customer. You can therefore offer even items of negligible value."
+    prohibitedItems:
+        heading: "Prohibited Items"
+        listItems: "<ul><li>Weapons and ammunition</li><li>Explosives and pyrotechnics</li><li>Drugs and narcotic substances</li><li>Counterfeits and forgeries</li></ul>"
+        content: "Please read the rules and conditions of use carefully before listing an item. If an item is on the list of prohibited items, it cannot be offered on this bazaar server."
+
+    howToBuy:
+        heading: "How to Buy"
+        content: "Buying on our bazaar is easy. Just select the item you're interested in and contact the seller via the contact form or phone. It's advisable to agree on the terms of receipt and payment of the item. Remember, this is a regional bazaar, so you'll have to pick up the items in person."
+
+    howToSell:
+        heading: "How to Sell"
+        content: "Selling on our bazaar is also easy. First, create an account and log in. Then you can add listings with photos and detailed descriptions. Make sure your item doesn't belong to the category of prohibited items. Once you add a listing, other users can see it and contact you. Remember, this is a regional bazaar, so buyers will have to pick up the items in person."
+
+    termsAndConditions:
+        header: "Terms and Conditions"
+        companyInfo: "This bazaar is operated by the company \"Marcel Šup\" with registered office at: Ke Kapli 258, 26718 Bubovice, Czech Republic."
+        mediatorInfo: "This bazaar only provides a platform for placing seller advertisements."
+        disclaimer: "This bazaar is not liable for any damages or losses incurred when using this application or when an unsuccessful transaction is completed."
+        buyerSellerProtection: "Both buyers and sellers protect themselves when making a transaction by preferring personal pickup of items. For this reason, both buyers and sellers agree to disclose information that facilitates this."
+        registrationRequirements: "Functional JavaScript and cookies are required for user registration."
+        freeUsage: "This bazaar is free to use for both buyers and sellers."
+
+    contact:
+        header: "Contact"
+        emailPhone: "email: oktagon@seznam.cz\ntel: +420 603165921"
+    
+
 homepage:
     title: "Homepage"
 

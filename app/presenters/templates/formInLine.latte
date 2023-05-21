@@ -2,7 +2,7 @@
 {block head}
     <link rel="stylesheet" href="{$basePath}/css/formsInLine.css">
 {/block}
-<form n:name=$form class=" fancyform inline-form form-row align-items-end my-2 mb-4"{ifset $class}{$class}{/ifset}">
+<form n:name=$form class=" fancyform inline-form form-row align-items-end my-0 mx-1"{ifset $class}{$class}{/ifset}">
  <ul class="errors list-unstyled" n:if="$form->hasErrors()">
         <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
  </ul> 
