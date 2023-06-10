@@ -14,6 +14,7 @@ use App\Model\UserManager;
 use App\Model\AddressManager;
 use App\Model\PhotoManager;
 use Nette\Localization\ITranslator;
+use Nette\Database\Explorer;
 /**
  * Description of FilterService
  *
@@ -26,80 +27,22 @@ class FilterService {
     private $addressManager;
     private $photoManager;
     protected $translator;
+     /** @var Nette\Database\Explorer */
+    protected $database;
     
     public function __construct(CategoryManager $categoryManager, OfferManager $offerManager,
-                                UserManager $userManager, AddressManager $addressManager, PhotoManager $photoManager, ITranslator $translator  ) {
+                                UserManager $userManager, AddressManager $addressManager, PhotoManager $photoManager, ITranslator $translator, Explorer $database  ) {
         $this->categoryManager = $categoryManager;
         $this->offerManager = $offerManager;
         $this->userManager = $userManager;
         $this->addressManager = $addressManager;
         $this->photoManager = $photoManager;
         $this->translator = $translator;
+        $this->database = $database;
     }
     
-  /*  public function getCategoriesForSelect($params = null, $latitude2 = null, $longitude2 = null) {
-       $array = [0 =>'všechny kategorie'];
-       if(!empty($params[OfferManager::COLUMN_CATEGORY])){
-            $categories = $this->categoryManager->getSubcategoriesWithCategory($params[OfferManager::COLUMN_CATEGORY]);
-            if(!empty($categories)){
-                array_push($categories, $this->categoryManager->get($params[OfferManager::COLUMN_CATEGORY])); 
-            }
-       } else{
-            $categories = $this->categoryManager->getAll();
-       }
-       foreach ($categories as $category){
-            $subcategories = $this->categoryManager->getSubcategories($category->{CategoryManager::COLUMN_ID});
-            $categoryCount = 0;
-            $arr = [];
-            foreach ($subcategories as $subcategory){
-                $subcategoryCount = $this->getCountByDistance($params, $latitude2, $longitude2, $subcategory->{CategoryManager::COLUMN_ID});
-                if ($subcategoryCount > 0){
-                    $arr[$subcategory->{CategoryManager::COLUMN_ID}] = "...".$subcategory->{CategoryManager::COLUMN_TITLE}."  (".$subcategoryCount.")";
-                    $categoryCount += $subcategoryCount;
-                }
-            }
-            
-            if(empty($subcategories)){
-                $categoryCount = $this->getCountByDistance($params, $latitude2, $longitude2, $category->{CategoryManager::COLUMN_ID});
-            }
-            
-            if ($categoryCount > 0){
-                $array[$category->{CategoryManager::COLUMN_ID}] = $category->{CategoryManager::COLUMN_TITLE}."  (".$categoryCount.")";
-                foreach ($arr as $subcategoryId => $subcategory){
-                    $array[$subcategoryId] = $subcategory;
-                }
-            }
-        }
-        $translatedArray = [0 =>$this->translator->translate('messages.category.all_categories')];
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $translatedSubcategories = [];
-                foreach ($value as $subKey => $subValue) {
-                    if (preg_match('/(.*)\s\((\d+)\)/', $subValue, $matches)) {
-                        $translationKey = $matches[1];
-                        $count = $matches[2];
-
-                        $translatedKey = $this->translator->translate("messages.category.".trim($translationKey));
-                        $translatedSubcategories[$subKey] = $translatedKey . " ($count)";
-                    }
-                }
-                $translatedArray[$key] = $translatedSubcategories;
-                
-            } else {
-                if (preg_match('/(.*)\s\((\d+)\)/', $value, $matches)) {
-                    $translationKey = $matches[1];
-                    $count = $matches[2];
-                    $translatedKey = $this->translator->translate('messages.category.'.trim($translationKey));
-
-                    $translatedArray[$key] = $translatedKey . " ($count)";
-                }
-            }
-        }
-        return $translatedArray;
-    }*/
-    
     public function getCategoriesForSelect($params = null, $latitude2 = null, $longitude2 = null) {
-        $array = [0 =>'všechny kategorie'];
+        $array = [0 =>$this->translator->translate('messages.FilterForm.allCategories')];
         if(!empty($params[OfferManager::COLUMN_CATEGORY])){
                     $categories = $this->categoryManager->getSubcategoriesWithCategory($params[OfferManager::COLUMN_CATEGORY]);
                     if(!empty($categories)){
@@ -173,6 +116,31 @@ class FilterService {
         }
     }
     
+    public function getActiveSubcategoriesBySeller($parameters = null) {
+        // Základní dotaz
+        $query = $this->database->table(CategoryManager::TABLE_NAME);
+
+        // Vytvoření subdotazu pro výběr ID kategorií z tabulky 'offer'
+        $subquery = $this->database->table(OfferManager::TABLE_NAME)
+            ->select(OfferManager::COLUMN_CATEGORY)
+            ->group(OfferManager::COLUMN_CATEGORY);
+        
+        // Pokud je nastavena kategorie, přidáme podmínku na výběr subkategorií
+        if (isset($parameters['category'])) {
+            $query->where(CategoryManager::COLUMN_PARENT_CATEGORY, intval($parameters['category']));
+        }
+
+        // Pokud je nastaveno jméno prodejce (seller_name), přidáme podmínku na výběr dle uživatele
+        if (isset($parameters['seller_name'])) {
+            $subquery->where(OfferManager::COLUMN_USER, $parameters['seller_name']);
+        }
+
+        // Aplikace subdotazu na hlavní dotaz
+        $query->where(CategoryManager::COLUMN_ID, $subquery->fetchAssoc("category"));
+
+        return $query->fetchAll();
+    }
+    
     public function getActiveSubcategories($parameters = null) {
         $allCategories = $this->getcountWithSubcategories($parameters);
         $ActiveSubcategories = [];
@@ -198,11 +166,7 @@ class FilterService {
     }
     
     public function getcountWithSubcategories($parameters = null) {
-        if(!empty($parameters[OfferManager::COLUMN_CATEGORY])){
-            $subcategories = $this->categoryManager->getSubcategories($parameters[OfferManager::COLUMN_CATEGORY]);
-        }else{
-              $subcategories = $this->categoryManager->getSubcategories(null);   
-         }
+        $subcategories = $this->categoryManager->getSubcategories(null);   
         $allCategories = [];
         foreach ($subcategories as $subcategory) {
             $categories = $this->categoryManager->getSubcategories($subcategory->{CategoryManager::COLUMN_ID});
@@ -289,6 +253,25 @@ class FilterService {
     public function getCountOffersByParams($params = null) {
         $table = $this->offerManager->getOfferTableByParams($params);
         return $table->count('*');
+    }
+    
+    public function getDistinctSellerNames() {
+        $uniqueUserIds = $this->database->table(OfferManager::TABLE_NAME)
+                            ->select(OfferManager::COLUMN_USER)
+                            ->group(OfferManager::COLUMN_USER)
+                            ->fetchPairs(OfferManager::COLUMN_USER, OfferManager::COLUMN_USER);
+        $sellerNames = [$this->translator->translate('messages.FilterForm.all')];
+
+        foreach($uniqueUserIds as $userId) {
+            $user = $this->database->table(UserManager::TABLE_NAME)
+                        ->get($userId);
+
+            if($user !== null) {
+                $sellerNames[$user[UserManager::COLUMN_ID]] = $user[UserManager::COLUMN_NAME];
+            }
+        }
+
+        return $sellerNames;
     }
 
 }
