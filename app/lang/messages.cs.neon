@@ -225,6 +225,9 @@ homepage:
     defaultLatte:
         no_items: "V bazaru nejsou žádné položky"
 
+    detailLatte:
+        seller: "prodejce"
+
 sign:
     inLatte:
         homepage: "Domovská stránka"
@@ -254,6 +257,10 @@ editForm:
     change data: "změnit údaje"
     fill your email: "Prosím vyplňte toto pole Vaší emailovou adresou"
     choose a password: "Prosím vyberte si heslo"
+
+FilterForm:
+    all: "všichni prodejci"
+    allCategories: "všechny kategorie"
 
 registrationForm:
     minLength: "minimální délka hesla musí být nejméně %min% znaků"

@@ -42,13 +42,13 @@
             <div class="col-md-6 col-12">
                 <div class="card">
                     <div class="card-header"><h4>{$offer->product_title}</h4></div>
-                    <div class="card-body"><div class=' px-2'>{$offer->product_description}</div></div>
+                    <div class="card-body"><div class=' px-2'><div class=' p-2'>{$offer->product_description}</div></div></div>
                     <div class="card-footer">{$offer->price}</div>
                     <div class="card-footer">
                         <div class="card">
-                            <div class="card-header">Header</div>
-                            <div class="card-body">Content</div>
-                            <div class="card-footer">Footer</div>
+                            <div class="card-header">{_messages.homepage.detailLatte.seller}: {$offer->user->user_name}</div>
+                            <div class="card-body px-3">Content</div>
+                            <a n:href="both $offer->id, 1, null, $offer->user->id">zobrazit všechny nabídky od prodejce {$offer->user->user_name}</a>
                         </div>
                     </div>
                 </div>

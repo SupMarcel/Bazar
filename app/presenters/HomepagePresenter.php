@@ -67,30 +67,47 @@ class HomepagePresenter extends BasePresenter {
             "min" . AddressManager::COLUMN_LONGITUDE => $userLongitude - $distanceLongitude,
         ];
     }
-
-    public function renderDefault($page = 1, $category = null) {
-        $_SESSION["fileArray"] = [];
-
+    
+    private function getParamsFromRequest($category = null, $seller_name = null, &$userLatitude = null, &$userLongitude = null) {
         if ($this->getUser()->isLoggedIn()) {
             $user = $this->userManager->get($this->getUser()->id);
             $userLatitude = $user->{AddressManager::TABLE_NAME}->{AddressManager::COLUMN_LATITUDE};
             $userLongitude = $user->{AddressManager::TABLE_NAME}->{AddressManager::COLUMN_LONGITUDE};
         }
         $params = [];
-        if (empty(floatval($this->getParameter(OfferManager::COLUMN_CATEGORY)))) {
-            $params[OfferManager::COLUMN_CATEGORY] = null;
-        } else {
-            $params[OfferManager::COLUMN_CATEGORY] = floatval($this->getParameter(OfferManager::COLUMN_CATEGORY));
+        $params[OfferManager::COLUMN_CATEGORY] = !empty(floatval($this->getParameter(OfferManager::COLUMN_CATEGORY))) ? floatval($this->getParameter(OfferManager::COLUMN_CATEGORY)) : null;
+        if (!empty($category)) {
+            $params[CategoryManager::COLUMN_PARENT_CATEGORY] = $category;
         }
-        $params[CategoryManager::COLUMN_PARENT_CATEGORY] = $category;
-        $params[OfferManager::COLUMN_TITLE] = $this->getParameter(OfferManager::COLUMN_TITLE);
-        $params["max" . OfferManager::COLUMN_PRICE] = floatval($this->getParameter("max" . OfferManager::COLUMN_PRICE));
-        $params["min" . OfferManager::COLUMN_PRICE] = floatval($this->getParameter("min" . OfferManager::COLUMN_PRICE));
+        if (!empty($this->getParameter('seller_name'))){
+            $params['seller_name'] = floatval($this->getParameter('seller_name'));
+        }
+        if (!empty($seller_name)) {
+            $params["seller_name"] = $seller_name;
+        }
+        if (!empty($this->getParameter(OfferManager::COLUMN_TITLE))){
+           $params[OfferManager::COLUMN_TITLE] = $this->getParameter(OfferManager::COLUMN_TITLE);
+        }
+        if (!empty($this->getParameter("max" . OfferManager::COLUMN_PRICE))){
+            $params["max" . OfferManager::COLUMN_PRICE] = floatval($this->getParameter("max" . OfferManager::COLUMN_PRICE));
+        }
+        if (!empty($this->getParameter("min" . OfferManager::COLUMN_PRICE))){
+            $params["min" . OfferManager::COLUMN_PRICE] = floatval($this->getParameter("min" . OfferManager::COLUMN_PRICE));
+        }
         if ($this->getParameter("distance")) {
             $params['distance'] = floatval($this->getParameter("distance"));
             $coordinates = $this->calculateMinMaxCoordinates($params['distance'], $userLatitude, $userLongitude);
             $params = array_merge($params, $coordinates);
         }
+        return $params;
+    }
+
+
+    public function renderDefault( $page = 1, $category = null, $seller_name = null, $id = null) {
+        $_SESSION["fileArray"] = [];
+        $userLatitude = null;
+        $userLongitude = null;
+        $params = $this->getParamsFromRequest($category, $seller_name, $userLatitude, $userLongitude);
         $paginator = new Paginator;
         $paginator->setItemsPerPage(10); // počet položek na stránce
         $paginator->setPage($page); // číslo aktuální stránky
@@ -112,6 +129,11 @@ class HomepagePresenter extends BasePresenter {
         $this->template->urlParameters = $urlParameters;
         $this->template->folderForOfferPictures = $this->photoManager->FOLDER_FOR_OFFER_PICTURES;
         $this->template->parentCategories = $this->categoryManager->breadcrumb($category);
+        if (!empty($id)){
+            $this->template->id = $id;
+        }else {
+            $this->template->id = null;
+        } 
     }
     
      public function renderDetail($id){
@@ -131,23 +153,24 @@ class HomepagePresenter extends BasePresenter {
         $this->template->images = $this->photoManager->getPhotosByOffer(intval($id));
     }
     
+    public function renderBoth($id = null, $page = 1, $category = null, $seller_name = null)
+    {
+        $this->renderDetail($id);
+        $this->renderDefault($page, $category, $seller_name, $id);
+
+        // set additional parameters as needed
+        // $this->template->param = $value;
+
+        // render the both.latte template
+        //$this->setView('both');
+    }
+
+    
 
     public function createComponentFilterForm() {
-        if ($this->getUser()->isLoggedIn()) {
-            $user = $this->userManager->get($this->getUser()->id);
-            $userLatitude = $user->{AddressManager::TABLE_NAME}->{AddressManager::COLUMN_LATITUDE};
-            $userLongitude = $user->{AddressManager::TABLE_NAME}->{AddressManager::COLUMN_LONGITUDE};
-        } else {
-            $userLatitude = null;
-            $userLongitude = null;
-        }
-
-        $params = $this->getRequest()->getParameters();
-        if (!empty($this->getParameter("distance"))) {
-            $params['distance'] = floatval($this->getParameter("distance"));
-            $coordinates = $this->calculateMinMaxCoordinates($params['distance'], $userLatitude, $userLongitude);
-            $params = array_merge($params, $coordinates);
-        }
+        $userLatitude = null;
+        $userLongitude = null;
+        $params = $this->getParamsFromRequest(null, null, $userLatitude, $userLongitude);
         $user = $this->getUser()->isLoggedIn() ? $this->userManager->get($this->getUser()->id) : null;
         $form = $this->offerFormFactory->createFilterForm($params, $userLatitude, $userLongitude);
         $form->setMethod("GET");
@@ -158,8 +181,20 @@ class HomepagePresenter extends BasePresenter {
                 $form->addError($this->translator->translate("messages.homepage.error_min_max_price"));
                 $noError = false;
             }
+            if($noError) {
+                $this->handleFilterFormSuccess($values);
+            }
         };
         return $form;
+    }
+    
+    public function handleFilterFormSuccess($values) {
+        bdump($values);
+        if (!empty($values['distance'])) {
+            $this->redirect("Homepage:", ['distance' => $values['distance'], 'category' => $values['category'], 'seller_name' => $values['seller_name'], 'product_title' => $values['product_title'], 'minprice' => $values['minprice'], 'maxprice' => $values['maxprice']]);
+        }else{
+            $this->redirect("Homepage:", ['category' => $values['category'], 'seller_name' => $values['seller_name'], 'product_title' => $values['product_title'], 'minprice' => $values['minprice'], 'maxprice' => $values['maxprice']]);
+        }
     }
 
     public function renderUsermanagement() {
@@ -180,7 +215,10 @@ class HomepagePresenter extends BasePresenter {
     }
     
     protected function createComponentSubcategories(): SubcategoriesControl {
-        $subcategoriesControl = new SubcategoriesControl($this->filterService);
+        $userLatitude = null;
+        $userLongitude = null;
+        $params = $this->getParamsFromRequest(null, null, $userLatitude, $userLongitude);
+        $subcategoriesControl = new SubcategoriesControl($this->filterService, $params);
         return $subcategoriesControl;
     }
     

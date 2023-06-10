@@ -117,9 +117,13 @@ class OfferFormFactory extends FormFactory
         }else{
              $categories = $this->filterService->getCategoriesForSelect($parameters);
         }
+        $selers = $this->filterService->getDistinctSellerNames();
         $form->addSelect(Model\OfferManager::COLUMN_CATEGORY, $label=null, $categories)
              ->setHtmlAttribute('class', 'form-control')
              ->setDefaultValue(!empty($parameters['category']) ? $parameters['category'] : 0);
+        $form->addSelect('seller_name', $label=null, $selers)
+             ->setHtmlAttribute('class', 'form-control')
+             ->setDefaultValue(!empty($parameters['seller_name']) ? $parameters['seller_name'] :0);
         $form->addText(Model\OfferManager::COLUMN_TITLE )
              ->setDefaultValue(!empty($parameters['title']) ? $parameters['title'] : null)   
              ->setHtmlAttribute('placeholder', 'text v titulku')

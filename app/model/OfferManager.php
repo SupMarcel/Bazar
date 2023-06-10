@@ -142,6 +142,10 @@ class OfferManager extends BaseManager
         if(!empty($params["min".self::COLUMN_PRICE])) {
             $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
         }
+        if(!empty($params["seller_name"])) {
+            bdump($params["seller_name"]);
+            $table->where(self::COLUMN_USER, $params["seller_name"]);
+        }
         if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
            $filterByLatitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE." < ?";
             $table->where($filterByLatitude,
@@ -153,6 +157,7 @@ class OfferManager extends BaseManager
                           ($params["max".AddressManager::COLUMN_LONGITUDE]));
         }
         return $table;
+        bdump($table);
     }
     
     public function getOfferTableByParams($params = null) {
@@ -175,6 +180,9 @@ class OfferManager extends BaseManager
         if(!empty($params["min".self::COLUMN_PRICE])) {
             $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
         }
+        if(!empty($params["seller_name"])) {
+            $table->where(self::COLUMN_USER, $params["seller_name"]);
+        }
         if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
             // $table->joinWhere->()joinWhere(AddressManager::TABLE_NAME, "")
            // $filterByLatitude = "user.active_address.latitude > ? AND user.active_address.latitude < ?";
@@ -188,6 +196,7 @@ class OfferManager extends BaseManager
                           ($params["max".AddressManager::COLUMN_LONGITUDE]));
         }
         return $table;
+        bdump($table);
     }
     
     public function getCountOffers($params = null, $categoryId = null ) {
@@ -203,6 +212,9 @@ class OfferManager extends BaseManager
         }
         if(!empty($params["min".self::COLUMN_PRICE])) {
             $table->where(self::COLUMN_PRICE.'>= ?', ($params["min".self::COLUMN_PRICE]));
+        }
+        if(!empty($params["seller_name"])) {
+            $table->where(self::COLUMN_USER, $params["seller_name"]);
         }
         if(!empty($params["min".AddressManager::COLUMN_LATITUDE])&&!empty($params["max".AddressManager::COLUMN_LATITUDE])&&!empty($params["min".AddressManager::COLUMN_LONGITUDE])&&!empty($params["max".AddressManager::COLUMN_LONGITUDE])) {
            $filterByLatitude = UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE. "> ? AND ".UserManager::TABLE_NAME.'.'.UserManager::COLUMN_ACTIVE_ADDRESS_ID.'.'.AddressManager::COLUMN_LATITUDE." < ?";
@@ -245,4 +257,7 @@ class OfferManager extends BaseManager
             ->where(self::COLUMN_ID, $offer)->fetch();
      return $row->hlavniFotografie;
     }
+    
+    
+
 }
