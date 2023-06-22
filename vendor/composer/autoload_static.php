@@ -7,15 +7,21 @@ namespace Composer\Autoload;
 class ComposerStaticInitc6f018061726708a66f21929f65b57be
 {
     public static $files = array (
-        'd507e002f7fce7f0c6dbf1f22edcb902' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/functions.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
+        'd507e002f7fce7f0c6dbf1f22edcb902' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'T' => 
+        array (
+            'Tests\\Unit\\' => 11,
+            'Tests\\Functional\\' => 17,
+            'Tests\\Acceptance\\' => 17,
+        ),
         'S' => 
         array (
             'Symfony\\Thanks\\' => 15,
@@ -33,11 +39,24 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         ),
         'A' => 
         array (
+            'App\\Model\\' => 10,
             'App\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Tests\\Unit\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests/Unit',
+        ),
+        'Tests\\Functional\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests/Functional',
+        ),
+        'Tests\\Acceptance\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests/Acceptance',
+        ),
         'Symfony\\Thanks\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/thanks/src',
@@ -73,6 +92,10 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Contributte\\Translation\\' => 
         array (
             0 => __DIR__ . '/..' . '/contributte/translation/src',
+        ),
+        'App\\Model\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/app/model',
         ),
         'App\\' => 
         array (
@@ -213,19 +236,21 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Nette\\Bridges\\CacheLatte\\CacheExtension' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/CacheExtension.php',
         'Nette\\Bridges\\CacheLatte\\CacheMacro' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/CacheMacro.php',
         'Nette\\Bridges\\CacheLatte\\Nodes\\CacheNode' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/Nodes/CacheNode.php',
+        'Nette\\Bridges\\CacheLatte\\Runtime' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/Runtime.php',
         'Nette\\Bridges\\DITracy\\ContainerPanel' => __DIR__ . '/..' . '/nette/di/src/Bridges/DITracy/ContainerPanel.php',
         'Nette\\Bridges\\DatabaseDI\\DatabaseExtension' => __DIR__ . '/..' . '/nette/database/src/Bridges/DatabaseDI/DatabaseExtension.php',
         'Nette\\Bridges\\DatabaseTracy\\ConnectionPanel' => __DIR__ . '/..' . '/nette/database/src/Bridges/DatabaseTracy/ConnectionPanel.php',
         'Nette\\Bridges\\FormsDI\\FormsExtension' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsDI/FormsExtension.php',
         'Nette\\Bridges\\FormsLatte\\FormMacros' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/FormMacros.php',
         'Nette\\Bridges\\FormsLatte\\FormsExtension' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/FormsExtension.php',
+        'Nette\\Bridges\\FormsLatte\\Nodes\\FieldNNameNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/FieldNNameNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\FormContainerNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/FormContainerNode.php',
+        'Nette\\Bridges\\FormsLatte\\Nodes\\FormNNameNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/FormNNameNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\FormNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/FormNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\FormPrintNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/FormPrintNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\InputErrorNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/InputErrorNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\InputNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/InputNode.php',
         'Nette\\Bridges\\FormsLatte\\Nodes\\LabelNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/LabelNode.php',
-        'Nette\\Bridges\\FormsLatte\\Nodes\\NNameNode' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Nodes/NNameNode.php',
         'Nette\\Bridges\\FormsLatte\\Runtime' => __DIR__ . '/..' . '/nette/forms/src/Bridges/FormsLatte/Runtime.php',
         'Nette\\Bridges\\HttpDI\\HttpExtension' => __DIR__ . '/..' . '/nette/http/src/Bridges/HttpDI/HttpExtension.php',
         'Nette\\Bridges\\HttpDI\\SessionExtension' => __DIR__ . '/..' . '/nette/http/src/Bridges/HttpDI/SessionExtension.php',
@@ -247,7 +272,6 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Nette\\Caching\\Storages\\Journal' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/Journal.php',
         'Nette\\Caching\\Storages\\MemcachedStorage' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/MemcachedStorage.php',
         'Nette\\Caching\\Storages\\MemoryStorage' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/MemoryStorage.php',
-        'Nette\\Caching\\Storages\\NewMemcachedStorage' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/NewMemcachedStorage.php',
         'Nette\\Caching\\Storages\\SQLiteJournal' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/SQLiteJournal.php',
         'Nette\\Caching\\Storages\\SQLiteStorage' => __DIR__ . '/..' . '/nette/caching/src/Caching/Storages/SQLiteStorage.php',
         'Nette\\ComponentModel\\ArrayAccess' => __DIR__ . '/..' . '/nette/component-model/src/ComponentModel/ArrayAccess.php',
@@ -580,7 +604,6 @@ class ComposerStaticInitc6f018061726708a66f21929f65b57be
         'Tracy\\Dumper\\Renderer' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Dumper/Renderer.php',
         'Tracy\\Dumper\\Value' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Dumper/Value.php',
         'Tracy\\FileSession' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Session/FileSession.php',
-        'Tracy\\FireLogger' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Logger/FireLogger.php',
         'Tracy\\Helpers' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Helpers.php',
         'Tracy\\IBarPanel' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Bar/IBarPanel.php',
         'Tracy\\ILogger' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Logger/ILogger.php',

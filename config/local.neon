@@ -7,8 +7,8 @@ parameters:
 
 database:
 	dsn: 'mysql:host=localhost;dbname=f61861'
-	user: root
-	password:
+	user: daniel
+	password: 'Bubovice258,'
 	options:
 		lazy: yes
 
