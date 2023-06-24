@@ -5,6 +5,7 @@ namespace App\Model;
 use Nette;
 use Nette\Security\Passwords;
 use Nette\Database\Explorer;
+use Contributte\Translation\Translator;
 
 
 /**
@@ -36,12 +37,16 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
         
          /** @var Passwords */
     private Passwords $passwords;
+    
+     /** @var Contributte\Translation\Translator */
+    public $translator;
 
 
-    public function __construct(Explorer $database, Passwords $passwords)
+    public function __construct(Explorer $database, Passwords $passwords, Translator $translator)
     {
         parent::__construct($database);
         $this->passwords = $passwords;
+        $this->translator = $translator;
     }
 
 
@@ -53,7 +58,7 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 	 * @return Nette\Security\Identity
 	 * @throws Nette\Security\AuthenticationException
 	 */
-	public function authenticate(array $credentials)
+	public function authenticate(array $credentials) : Nette\Security\IIdentity
 	{
 		list($username, $password) = $credentials;
 
@@ -62,10 +67,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 			->fetch();
 
 		if (!$row) {
-			throw new Nette\Security\AuthenticationException('The username is incorrect.', self::IDENTITY_NOT_FOUND);
+			throw new Nette\Security\AuthenticationException($this->translator->translate("messages.UserManager.incorrect_user_name"), self::IDENTITY_NOT_FOUND);
 
 		} elseif (!$this->passwords->verify($password, $row[self::COLUMN_PASSWORD_HASH])) {
-			throw new Nette\Security\AuthenticationException('The password is incorrect.', self::INVALID_CREDENTIAL);
+			throw new Nette\Security\AuthenticationException($this->translator->translate("messages.UserManager.incorrect_password"), self::INVALID_CREDENTIAL);
 
 		} elseif ($this->passwords->needsRehash($row[self::COLUMN_PASSWORD_HASH])) {
 			$row->update([
@@ -73,84 +78,109 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
 			]);
 		}
 
-		$arr = $row->toArray();
-		unset($arr[self::COLUMN_PASSWORD_HASH]);
-		return new Nette\Security\Identity($row[self::COLUMN_ID], $row[self::COLUMN_ROLE], $arr);
+		$userData = $row->toArray();
+		unset($userData[self::COLUMN_PASSWORD_HASH]);
+                bdump(new Nette\Security\SimpleIdentity($row[self::COLUMN_ID], $row[self::COLUMN_ROLE], $userData));
+
+		return new Nette\Security\SimpleIdentity($row[self::COLUMN_ID], $row[self::COLUMN_ROLE], $userData);
 	}
 
-
-	/**
-	 * Adds new user.
-	 * @param  array
-	 * @return void
-	 * @throws DuplicateNameException
-	 */
-	public function add($properties)
-	{
-		try {
-                    $row = $this->database->table(self::TABLE_NAME)->insert([
-                        self::COLUMN_NAME => $properties[self::COLUMN_NAME],
-                        self::COLUMN_PASSWORD_HASH => $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]),
-                        self::COLUMN_EMAIL => $properties[self::COLUMN_EMAIL],
-                        self::COLUMN_PHONE => $properties[self::COLUMN_PHONE],
-                        self::COLUMN_FIRSTNAME => $properties[self::COLUMN_FIRSTNAME],
-                        self::COLUMN_LASTNAME => $properties[self::COLUMN_LASTNAME],
-                        
-                        self::COLUMN_TIME => $properties[self::COLUMN_TIME],
-                        self::COLUMN_NOTE => $properties[self::COLUMN_NOTE],
-                        self::COLUMN_SEX => $properties[self::COLUMN_SEX],
-                        self::COLUMN_ICON => $properties[self::COLUMN_ICON],
-                        self::COLUMN_ROLE => "NORMALUSER"
-                    ]);
-                    return $row->id;
-		} catch (Nette\Database\UniqueConstraintViolationException $e) {
-			throw new DuplicateNameException;
-		}
-	}
-
-    public function edit($id, $properties){
-	    $user = $this->database->table(self::TABLE_NAME)->get($id);
-	    if(!empty($user)){
-            $user->update([
-                self::COLUMN_PHONE => $properties[self::COLUMN_PHONE],
-                self::COLUMN_FIRSTNAME => $properties[self::COLUMN_FIRSTNAME],
-                self::COLUMN_LASTNAME => $properties[self::COLUMN_LASTNAME],
-                self::COLUMN_CITY => BaseManager::CITY,
-                self::COLUMN_TIME => $properties[self::COLUMN_TIME],
-                self::COLUMN_NOTE => $properties[self::COLUMN_NOTE],
-                self::COLUMN_SEX => $properties[self::COLUMN_SEX],
-                self::COLUMN_ICON => $properties[self::COLUMN_ICON],
+    /**
+     * Adds a new user.
+     * @param  array $properties
+     * @return void
+     * @throws DuplicateNameException
+     */
+    public function add($properties)
+    {
+        try {
+            $row = $this->database->table(self::TABLE_NAME)->insert([
+                self::COLUMN_NAME => isset($properties[self::COLUMN_NAME]) ? htmlspecialchars(trim($properties[self::COLUMN_NAME])) : '',
+                self::COLUMN_PASSWORD_HASH => isset($properties[self::COLUMN_PASSWORD_HASH]) ? $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]) : '',
+                self::COLUMN_EMAIL => isset($properties[self::COLUMN_EMAIL]) ? htmlspecialchars(trim($properties[self::COLUMN_EMAIL])) : '',
+                self::COLUMN_PHONE => isset($properties[self::COLUMN_PHONE]) ? htmlspecialchars(trim($properties[self::COLUMN_PHONE])) : '',
+                self::COLUMN_FIRSTNAME => isset($properties[self::COLUMN_FIRSTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_FIRSTNAME])) : '',
+                self::COLUMN_LASTNAME => isset($properties[self::COLUMN_LASTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_LASTNAME])) : '',
+                self::COLUMN_TIME => isset($properties[self::COLUMN_TIME]) ? $properties[self::COLUMN_TIME] : '',
+                self::COLUMN_NOTE => isset($properties[self::COLUMN_NOTE]) ? htmlspecialchars(trim($properties[self::COLUMN_NOTE])) : '',
+                self::COLUMN_SEX => isset($properties[self::COLUMN_SEX]) ? htmlspecialchars(trim($properties[self::COLUMN_SEX])) : '',
+                self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
                 self::COLUMN_ROLE => "NORMALUSER"
             ]);
-            } else {
-	        throw new Nette\Neon\Exception("Uživatel s tímto ID nebyl nalezen.");
-              } 
+
+            return $row->id;
+        } catch (Nette\Database\UniqueConstraintViolationException $e) {
+            throw new DuplicateNameException;
+        }
     }
-    
+
+
+    public function edit($id, $properties) {
+        $user = $this->database->table(self::TABLE_NAME)->get($id);
+        if (!empty($user)) {
+            try {
+                $user->update([
+                    self::COLUMN_PHONE => isset($properties[self::COLUMN_PHONE]) ? htmlspecialchars(trim($properties[self::COLUMN_PHONE])) : '',
+                    self::COLUMN_FIRSTNAME => isset($properties[self::COLUMN_FIRSTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_FIRSTNAME])) : '',
+                    self::COLUMN_LASTNAME => isset($properties[self::COLUMN_LASTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_LASTNAME])) : '',
+                    self::COLUMN_TIME => isset($properties[self::COLUMN_TIME]) ? $properties[self::COLUMN_TIME] : '',
+                    self::COLUMN_NOTE => isset($properties[self::COLUMN_NOTE]) ? htmlspecialchars(trim($properties[self::COLUMN_NOTE])) : '',
+                    self::COLUMN_SEX => isset($properties[self::COLUMN_SEX]) ? htmlspecialchars(trim($properties[self::COLUMN_SEX])) : '',
+                    self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
+                    self::COLUMN_ROLE => "NORMALUSER"
+                    ]);
+            } catch (Nette\Database\Exception $e) {
+                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+              }
+        } else {
+            throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
+        }
+    }
+
+
     
     public function editLanguage ($id, $language){
         $user = $this->database->table(self::TABLE_NAME)->get($id);
-	$user->update([
-                self::COLUMN_LANGUAGE => $language
-                     ]);
+        if (!empty($user)){
+            try {    
+                $user->update([
+                        self::COLUMN_LANGUAGE => $language
+                             ]);
+            }catch (Nette\Database\Exception $e) {
+                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+             }
+        }else {
+            throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
+        }
     }
     
     public function editActiveAddress($id, $activeAddressId){
 	    $user = $this->database->table(self::TABLE_NAME)->get($id);
-	    
-            $user->update([
-                self::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
-                     ]);        
+	    if (!empty($user)){
+                try{
+                    $user->update([
+                        self::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
+                             ]);
+                }catch (Nette\Database\Exception $e) {
+                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+                 }
+            }else{
+                throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
+            }
     }
 
     public function cancelEmailSubscription($id){
         $user = $this->database->table(self::TABLE_NAME)->get($id);
         if(!empty($user)){
-            $user->update([
-                self::COLUMN_EMAIL_SUBSCRIPTION => 0
-            ]);
+            try {
+                $user->update([
+                    self::COLUMN_EMAIL_SUBSCRIPTION => 0
+                ]);
+            }catch (Nette\Database\Exception $e) {
+                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+             }
         } else {
-            throw new Nette\Neon\Exception("Uživatel s tímto ID nebyl nalezen.");
+            throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
         }
     }
 }

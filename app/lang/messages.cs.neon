@@ -18,6 +18,12 @@ user:
     email_subscription: "e-mailový odběr"
     active_address_id: "aktuální aktivní adresa"
 
+UserManager:
+    incorrect_user_name : "Nesprávné uživatelské jméno"
+    incorrect_password : "Heslo není správně"
+    incorect_user : "uživatel s tímto id nebyl nalezen"
+    no_change_data : "Nepodařilo se změnit data v databázi"
+
 address:
     street_house_number: "ulice a číslo domu"
     region: "kraj"

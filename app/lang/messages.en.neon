@@ -18,6 +18,11 @@ user:
     email_subscription: "email subscription"
     active_address_id: "actual active address"
 
+UserManager:
+    incorrect_user_name : "The username is incorrect."
+    incorrect_password : "The password is incorrect."
+    incorect_user : "user with this id not found"
+    no_change_data : "Failed to change data in databasei"
 address:
     street_house_number: "street and house number"
     region: "region"
