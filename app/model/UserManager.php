@@ -180,9 +180,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                 $user->update([
                     self::COLUMN_EMAIL_SUBSCRIPTION => 0
                 ]);
-            }catch (Nette\Database\Exception $e) {
-                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
-             }
+            }catch (PDOException $e) {
+                    $this->logError('Chyba při změně aktivní adresy: ' . $e->getMessage());
+                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
+                 }
         } else {
             throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
         }
