@@ -10,7 +10,8 @@ namespace App\Model;
 
 
 use Nette;
-
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 
 
@@ -28,6 +29,11 @@ class AddressManager extends BaseManager
         COLUMN_LONGITUDE = 'longitude',
         COLUMN_USER = 'user_id';
     
+    
+    public function __construct(Explorer $database, ILogger $logger)
+    {
+        parent::__construct($database,$logger);
+    }
     
     public function addAddress($completAddress, $userId) {
         $row = $this->database->table(self::TABLE_NAME)->insert([

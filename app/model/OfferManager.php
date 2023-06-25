@@ -14,6 +14,8 @@ use Nette\Mail\Message;
 use Nette\Mail\SendmailMailer;
 use App\Model\AddressManager;
 use  Nette\Utils\ArrayHash;
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class OfferManager extends BaseManager
 {
@@ -44,10 +46,10 @@ class OfferManager extends BaseManager
     private $addressManager;
 
     public function __construct(Nette\Database\Explorer $database, CategoryManager $categoryManager,
-                                UserManager $userManager,
+                                UserManager $userManager, ILogger $logger,
         CommentManager $commentManager, PhotoManager $photoManager, Sender $sender, AddressManager $addressManager)
     {
-        parent::__construct($database);
+        parent::__construct($database,$logger);
         $this->categoryManager = $categoryManager;
         $this->userManager = $userManager;
         $this->commentManager = $commentManager;

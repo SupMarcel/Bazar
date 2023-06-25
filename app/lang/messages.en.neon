@@ -22,7 +22,9 @@ UserManager:
     incorrect_user_name : "The username is incorrect."
     incorrect_password : "The password is incorrect."
     incorect_user : "user with this id not found"
-    no_change_data : "Failed to change data in databasei"
+    no_change_data : "Failed to change data in database"
+    error_register : "Unfortunately, registration failed - try registering again"
+    error_edit : "Unfortunately, it was not possible to change your data - try to change it again"
 address:
     street_house_number: "street and house number"
     region: "region"

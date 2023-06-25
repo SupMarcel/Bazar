@@ -13,6 +13,8 @@ use Nette;
 use Nette\Security\Passwords;
 use Nette\Mail\Message;
 use Nette\Mail\SendmailMailer;
+use Nette\Database\Explorer;
+
 
 class RegistrationManager
 {

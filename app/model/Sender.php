@@ -11,6 +11,7 @@ namespace App\Model;
 use Nette;
 use Latte\Engine;
 
+
 class Sender
 {
     /** @var Nette\Application\LinkGenerator */
@@ -19,7 +20,8 @@ class Sender
     private $templateFactory;
 
     public function __construct(Nette\Application\LinkGenerator $linkGenerator,
-                                Nette\Application\UI\ITemplateFactory $templateFactory)
+                                Nette\Application\UI\ITemplateFactory $templateFactory
+                                )
     {
         $this->linkGenerator = $linkGenerator;
         $this->templateFactory = $templateFactory;

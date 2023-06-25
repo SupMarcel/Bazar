@@ -10,6 +10,8 @@ namespace App\Model;
 
 
 use Nette;
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class ReportManager extends BaseManager
 {
@@ -18,6 +20,11 @@ class ReportManager extends BaseManager
         COLUMN_USER = 'uzivatel',
         COLUMN_OFFER = 'nabidka',
         COLUMN_REASON = 'duvod';
+    
+    public function __construct(Explorer $database, ILogger $logger)
+    {
+        parent::__construct($database,$logger);
+    }
 
    
 

@@ -12,7 +12,8 @@ namespace App\Model;
 use Nette;
 use Nette\Http\FileUpload;
 use Nette\Utils\FileSystem;
-
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class PhotoManager extends BaseManager
 {
@@ -34,9 +35,9 @@ class PhotoManager extends BaseManager
     
     public string $FOLDER_FOR_OFFER_PICTURES;
     
-    public function __construct(string $folderForOfferPicture,  Nette\Database\Explorer $database)
+    public function __construct(string $folderForOfferPicture,  Nette\Database\Explorer $database, ILogger $logger)
     {
-        parent::__construct($database);
+        parent::__construct($database,$logger);
         $this->FOLDER_FOR_OFFER_PICTURES = $folderForOfferPicture;
         FileSystem::createDir($this->FOLDER_FOR_OFFER_PICTURES);
     }    

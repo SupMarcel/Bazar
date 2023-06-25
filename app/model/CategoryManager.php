@@ -10,6 +10,8 @@ namespace App\Model;
 
 
 use Nette;
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class CategoryManager extends BaseManager
 {
@@ -23,9 +25,9 @@ class CategoryManager extends BaseManager
     private UserManager $userManager;
     private AddressManager $addressManager;
 
-    public function __construct(Nette\Database\Explorer $database, UserManager $userManager, AddressManager $addressManager)
+    public function __construct(Nette\Database\Explorer $database, ILogger $logger, UserManager $userManager, AddressManager $addressManager )
     {
-        parent::__construct($database);
+        parent::__construct($database,$logger);
         $this->userManager = $userManager;
         $this->addressManager = $addressManager;
     }

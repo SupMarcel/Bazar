@@ -6,7 +6,7 @@ use Nette;
 use Nette\Security\Passwords;
 use Nette\Database\Explorer;
 use Contributte\Translation\Translator;
-
+use Tracy\ILogger;
 
 /**
  * Users management.
@@ -40,11 +40,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
     
      /** @var Contributte\Translation\Translator */
     public $translator;
-
-
-    public function __construct(Explorer $database, Passwords $passwords, Translator $translator)
+    
+    public function __construct(Explorer $database, ILogger $logger, Passwords $passwords, Translator $translator)
     {
-        parent::__construct($database);
+        parent::__construct($database,$logger);
         $this->passwords = $passwords;
         $this->translator = $translator;
     }
@@ -109,9 +108,11 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
             ]);
 
             return $row->id;
-        } catch (Nette\Database\UniqueConstraintViolationException $e) {
-            throw new DuplicateNameException;
-        }
+        }catch (PDOException $e) {
+            $this->logError('Chyba při registraci uživatele: ' . $e->getMessage());
+            $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_register"), 'error');
+        }   
+
     }
 
 
@@ -129,8 +130,9 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                     self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
                     self::COLUMN_ROLE => "NORMALUSER"
                     ]);
-            } catch (Nette\Database\Exception $e) {
-                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+            } catch (PDOException $e) {
+                $this->logError('Chyba při zápisu změny údajů uživatele: ' . $e->getMessage());
+                $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_edit"), 'error');
               }
         } else {
             throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
@@ -146,9 +148,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                 $user->update([
                         self::COLUMN_LANGUAGE => $language
                              ]);
-            }catch (Nette\Database\Exception $e) {
-                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
-             }
+            }catch (PDOException $e) {
+                $this->logError('Chyba při editaci jazyka uživatele: ' . $e->getMessage());
+                $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_language"), 'error');
+              }
         }else {
             throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
         }
@@ -161,8 +164,9 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                     $user->update([
                         self::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
                              ]);
-                }catch (Nette\Database\Exception $e) {
-                throw new Nette\Database\Exception($this->translator->translate("messages.UserManager.no_change_data"));
+                }catch (PDOException $e) {
+                    $this->logError('Chyba při změně aktivní adresy: ' . $e->getMessage());
+                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
                  }
             }else{
                 throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));

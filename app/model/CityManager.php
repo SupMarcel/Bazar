@@ -10,6 +10,8 @@ namespace App\Model;
 
 
 use Nette;
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class CityManager extends BaseManager
 {
@@ -18,5 +20,11 @@ class CityManager extends BaseManager
         COLUMN_ID = 'id',
         COLUMN_TITLE = 'nazev',
         COLUMN_REGION = 'okres';
+    
+    public function __construct(Explorer $database, ILogger $logger)
+    {
+        parent::__construct($database,$logger);
+    }
    
 }
+

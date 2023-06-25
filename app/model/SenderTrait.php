@@ -10,6 +10,7 @@ namespace App\Model;
 
 use Nette;
 
+
 trait SenderTrait
 {
     /** @var Nette\Application\LinkGenerator */

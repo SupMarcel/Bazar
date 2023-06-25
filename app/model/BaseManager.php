@@ -10,6 +10,7 @@ namespace App\Model;
 
 use Nette;
 use Nette\Database\Explorer;
+use Tracy\ILogger;
 
 
 class BaseManager
@@ -25,14 +26,21 @@ class BaseManager
     /** @var Nette\Database\Explorer */
     protected $database;
     
-    
+    private $logger;
 
 
-    public function __construct(Explorer $database)
+    public function __construct(Explorer $database, ILogger $logger)
     {
         $this->database = $database;
+        $this->logger = $logger;
     }
-
+    
+    
+    protected function logError($message)
+    {
+        $this->logger->log($message, ILogger::EXCEPTION);
+    }
+    
     public function get($id){
         return $this->database->table(static::TABLE_NAME)->get($id);
     }

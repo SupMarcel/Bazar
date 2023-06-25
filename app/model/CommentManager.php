@@ -7,7 +7,8 @@
  */
 
 namespace App\Model;
-
+use Tracy\ILogger;
+use Nette\Database\Explorer;
 
 class CommentManager extends BaseManager
 {
@@ -21,6 +22,11 @@ class CommentManager extends BaseManager
         COLUMN_COMMENT = 'komentar',
         COLUMN_TIME = 'time';
 
+    public function __construct(Explorer $database, ILogger $logger)
+    {
+        parent::__construct($database,$logger);
+    }
+    
     public function addComment($properties){
         $array = [
             self::COLUMN_USER => $properties[self::COLUMN_USER],

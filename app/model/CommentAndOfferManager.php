@@ -14,6 +14,7 @@ use Nette\Mail\SendmailMailer;
 use Nette\Security\User;
 use Nette\Localization\ITranslator;
 
+
 class CommentAndOfferManager
 {
     /** @var  OfferManager */
