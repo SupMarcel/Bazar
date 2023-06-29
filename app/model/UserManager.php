@@ -93,26 +93,39 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
     public function add($properties)
     {
         try {
-            $row = $this->database->table(self::TABLE_NAME)->insert([
-                self::COLUMN_NAME => isset($properties[self::COLUMN_NAME]) ? htmlspecialchars(trim($properties[self::COLUMN_NAME])) : '',
-                self::COLUMN_PASSWORD_HASH => isset($properties[self::COLUMN_PASSWORD_HASH]) ? $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]) : '',
-                self::COLUMN_EMAIL => isset($properties[self::COLUMN_EMAIL]) ? htmlspecialchars(trim($properties[self::COLUMN_EMAIL])) : '',
-                self::COLUMN_PHONE => isset($properties[self::COLUMN_PHONE]) ? htmlspecialchars(trim($properties[self::COLUMN_PHONE])) : '',
-                self::COLUMN_FIRSTNAME => isset($properties[self::COLUMN_FIRSTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_FIRSTNAME])) : '',
-                self::COLUMN_LASTNAME => isset($properties[self::COLUMN_LASTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_LASTNAME])) : '',
-                self::COLUMN_TIME => isset($properties[self::COLUMN_TIME]) ? $properties[self::COLUMN_TIME] : '',
-                self::COLUMN_NOTE => isset($properties[self::COLUMN_NOTE]) ? htmlspecialchars(trim($properties[self::COLUMN_NOTE])) : '',
-                self::COLUMN_SEX => isset($properties[self::COLUMN_SEX]) ? htmlspecialchars(trim($properties[self::COLUMN_SEX])) : '',
-                self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
-                self::COLUMN_ROLE => "NORMALUSER"
-            ]);
+            $sanitizedProperties = $this->sanitizeProperties($properties);
+            $sanitizedProperties[self::COLUMN_PASSWORD_HASH] = isset($properties[self::COLUMN_PASSWORD_HASH]) ? $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]) : '';
+            $sanitizedProperties[self::COLUMN_ROLE] = "NORMALUSER";
+
+            $row = $this->database->table(self::TABLE_NAME)->insert($sanitizedProperties);
 
             return $row->id;
         }catch (PDOException $e) {
             $this->logError('Chyba při registraci uživatele: ' . $e->getMessage());
             $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_register"), 'error');
         }   
+    }
 
+    private function sanitizeProperties($properties)
+    {
+        $columns = [
+            self::COLUMN_NAME,
+            self::COLUMN_EMAIL,
+            self::COLUMN_PHONE,
+            self::COLUMN_FIRSTNAME,
+            self::COLUMN_LASTNAME,
+            self::COLUMN_TIME,
+            self::COLUMN_NOTE,
+            self::COLUMN_SEX,
+            self::COLUMN_ICON
+        ];
+
+        $sanitizedProperties = [];
+        foreach ($columns as $column) {
+            $sanitizedProperties[$column] = isset($properties[$column]) ? htmlspecialchars(trim($properties[$column])) : '';
+        }
+
+        return $sanitizedProperties;
     }
 
 

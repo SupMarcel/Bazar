@@ -3,7 +3,7 @@
         'name' => 'nette/sandbox',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => 'ceaee5962e112afe0e3d36383b231f8deae462a0',
+        'reference' => 'fde533d0be7448feba5936666949fa4673014f99',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -157,7 +157,7 @@
         'nette/sandbox' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => 'ceaee5962e112afe0e3d36383b231f8deae462a0',
+            'reference' => 'fde533d0be7448feba5936666949fa4673014f99',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -6,7 +6,7 @@ use Nette;
 use Tester;
 use Tester\Assert;
 
-$container = require __DIR__ . '/bootstrap.php';
+$container = require '../vendor/nette/tester/src/bootstrap.php';
 
 
 class ExampleTest extends Tester\TestCase
