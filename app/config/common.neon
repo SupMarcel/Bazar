@@ -34,5 +34,5 @@ translation:
 		default: en
 		fallback: [cs, en]
 	dirs:
-		- %appDir%/lang
+		- app/lang
 	returnOriginalMessage: true

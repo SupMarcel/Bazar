@@ -1,22 +1,46 @@
 <?php
+require '../../../vendor/autoload.php';
 
-require '../../../vendor/nette/tester/src/bootstrap.php';
-require '../../../vendor/tracy/tracy/src/Tracy/Logger/ILogger.php';
-
+use App\Model\UserManager;
 use Tester\Assert;
 use Nette\Database\Explorer;
+use Nette\Database\Connection;
+use Nette\Database\Structure;
+use Nette\Caching\Storages\DevNullStorage;
 use Nette\Security\Passwords;
 use Contributte\Translation\Translator;
 use Tracy\ILogger;
 
+
+Tester\Environment::lock('mockery', __DIR__ . '/temp');
+register_shutdown_function(function () {
+    Mockery::close();
+});
+
+
+
 // předpokládám, že máte třídu Logger implementující ILogger
-$logger = new Logger();
+$logger = new class implements ILogger {
+    public function log($value, $priority = self::INFO) {
+        // implementace metody log
+    }
+};
 
-// předpokládám, že máte třídu Database implementující Explorer
-$database = new Database();
+// vytvoříme instanci Connection
+$connection = new Connection('mysql:host=localhost;dbname=f61861', 'daniel', 'Bubovice258,');
 
-// předpokládám, že máte třídu Translation implementující Translator
-$translator = new Translation();
+// vytvoříme instanci Structure
+$structure = new Structure($connection, new DevNullStorage());
+
+// vytvoříme instanci Explorer
+$database = new Explorer($connection, $structure);
+
+// vytvoříme mock objekt pro třídu Translator
+$translator = Mockery::mock(Translator::class);
+
+// nastavíme, jak se má mock objekt chovat
+// v tomto případě říkáme, že když je zavolána metoda translate, vrátí se řetězec 'translated text'
+$translator->shouldReceive('translate')->andReturn('translated text');
 
 $passwords = new Passwords();
 
@@ -27,6 +51,15 @@ $testData = [
     'user_name' => 'TestUser',
     'password' => 'TestPassword',
     'email' => 'test@example.com',
+    'phone' => '603165921',
+    'firstname' => 'Marcel',
+    'lastname' => 'Sup',
+    'opening_hours' => '9-12',
+    'note' => 'zkouška',
+    'role' => 'žádná',
+    'genders' => 1 ,
+    'icon' => null,
+    'email_subscription' => 1 
     // další pole podle vašich potřeb...
 ];
 

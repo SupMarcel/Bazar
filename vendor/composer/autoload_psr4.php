@@ -17,6 +17,7 @@ return array(
     'Symfony\\Component\\Translation\\' => array($vendorDir . '/symfony/translation'),
     'Symfony\\Component\\Filesystem\\' => array($vendorDir . '/symfony/filesystem'),
     'Symfony\\Component\\Config\\' => array($vendorDir . '/symfony/config'),
+    'Mockery\\' => array($vendorDir . '/mockery/mockery/library/Mockery'),
     'Contributte\\Translation\\' => array($vendorDir . '/contributte/translation/src'),
     'App\\Model\\' => array($baseDir . '/app/model'),
     'App\\' => array($baseDir . '/app'),

@@ -3,7 +3,7 @@
         'name' => 'nette/sandbox',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => 'fde533d0be7448feba5936666949fa4673014f99',
+        'reference' => '8918c6cb3c673d1cdab0dfde839fbcfac8a3321b',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -19,6 +19,33 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'cordoval/hamcrest-php' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'davedevelopment/hamcrest-php' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'hamcrest/hamcrest-php' => array(
+            'pretty_version' => 'v2.0.1',
+            'version' => '2.0.1.0',
+            'reference' => '8c3d0a3f6af734494ad8f6fbbee0ba92422859f3',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../hamcrest/hamcrest-php',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'kodova/hamcrest-php' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
         'latte/latte' => array(
             'pretty_version' => 'v2.11.6',
             'version' => '2.11.6.0',
@@ -27,6 +54,15 @@
             'install_path' => __DIR__ . '/../latte/latte',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'mockery/mockery' => array(
+            'pretty_version' => '1.6.2',
+            'version' => '1.6.2.0',
+            'reference' => '13a7fa2642c76c58fa2806ef7f565344c817a191',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mockery/mockery',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'nette/application' => array(
             'pretty_version' => 'v3.1.11',
@@ -157,7 +193,7 @@
         'nette/sandbox' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => 'fde533d0be7448feba5936666949fa4673014f99',
+            'reference' => '8918c6cb3c673d1cdab0dfde839fbcfac8a3321b',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

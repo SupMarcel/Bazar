@@ -38,7 +38,8 @@
     },
     "require-dev": {
         "nette/tester": "^2.5",
-        "symfony/thanks": "^1"
+        "symfony/thanks": "^1",
+        "mockery/mockery": "^1.6"
     },
         "autoload": {
         "psr-4": {
