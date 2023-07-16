@@ -133,7 +133,7 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
         $user = $this->database->table(self::TABLE_NAME)->get($id);
         if (!empty($user)) {
             try {
-                $user->update([
+                $updateData = [
                     self::COLUMN_PHONE => isset($properties[self::COLUMN_PHONE]) ? htmlspecialchars(trim($properties[self::COLUMN_PHONE])) : '',
                     self::COLUMN_FIRSTNAME => isset($properties[self::COLUMN_FIRSTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_FIRSTNAME])) : '',
                     self::COLUMN_LASTNAME => isset($properties[self::COLUMN_LASTNAME]) ? htmlspecialchars(trim($properties[self::COLUMN_LASTNAME])) : '',
@@ -142,15 +142,20 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                     self::COLUMN_SEX => isset($properties[self::COLUMN_SEX]) ? htmlspecialchars(trim($properties[self::COLUMN_SEX])) : '',
                     self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
                     self::COLUMN_ROLE => "NORMALUSER"
-                    ]);
+                ];
+                if (isset($properties[self::COLUMN_PASSWORD_HASH])) {
+                    $updateData[self::COLUMN_PASSWORD_HASH] = $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]);
+                }
+                $user->update($updateData);
             } catch (PDOException $e) {
                 $this->logError('Chyba při zápisu změny údajů uživatele: ' . $e->getMessage());
                 $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_edit"), 'error');
               }
         } else {
             throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
-        }
+          }
     }
+
 
 
     

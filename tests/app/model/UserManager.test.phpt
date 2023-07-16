@@ -69,4 +69,68 @@ $userId = $userManager->add($testData);
 // použijeme assert funkci k ověření, že ID je platné (není prázdné)
 Assert::true($userId !== null && $userId > 0);
 
+// vytvoříme testovací data
+$testData = [
+    'user_name' => 'TestUser',
+    'password' => 'TestPassword',
+    'email' => 'test@example.com',
+    'genders' => 1
+    // další pole podle vašich potřeb...
+];
+
+// zavoláme metodu add a uložíme vrácené ID
+$userId = $userManager->add($testData);
+
+// použijeme assert funkci k ověření, že ID je platné (není prázdné)
+Assert::true($userId !== null && $userId > 0);
+
+// vytvoříme data pro editaci
+$editData = [
+    'user_name' => 'EditedUser',
+    'password' => 'EditedPassword',
+    'email' => 'edited@example.com',
+    'genders' => 2
+    // další pole podle vašich potřeb...
+];
+
+// zavoláme metodu edit
+$userManager->edit($userId, $editData);
+
+// získáme upraveného uživatele z databáze
+$editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
+
+// ověříme, že data byla správně upravena
+Assert::equal($editData['user_name'], $editedUser->user_name);
+Assert::equal($editData['email'], $editedUser->email);
+// pro ověření hesla použijeme metodu verify
+Assert::true($passwords->verify($editData['password'], $editedUser->password));
+Assert::equal($editData['genders'], $editedUser->genders);
+// a tak dále pro další pole...
+// ... předchozí kód ...
+
+// vytvoříme testovací data pro nového uživatele
+$testData = [
+    'user_name' => 'TestUser',
+    'password' => 'TestPassword',
+    'email' => 'test@example.com',
+    'genders' => 1
+    // další pole podle vašich potřeb...
+];
+
+// zavoláme metodu add a uložíme vrácené ID
+$userId = $userManager->add($testData);
+
+// použijeme assert funkci k ověření, že ID je platné (není prázdné)
+Assert::true($userId !== null && $userId > 0);
+
+// nyní ověříme, zda můžeme uživatele autentizovat pomocí jeho uživatelského jména a hesla
+try {
+    $authenticatedUser = $userManager->authenticate(['TestUser', 'TestPassword']);
+    Assert::equal($authenticatedUser->getId(), $userId);
+} catch (Nette\Security\AuthenticationException $e) {
+    Assert::fail('Authentication failed: ' . $e->getMessage());
+}
+
+// ... další testy ...
+
 // zde byste mohl přidat další testy, například zda jsou data správně uložena v databázi
