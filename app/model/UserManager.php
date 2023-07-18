@@ -141,7 +141,8 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
                     self::COLUMN_NOTE => isset($properties[self::COLUMN_NOTE]) ? htmlspecialchars(trim($properties[self::COLUMN_NOTE])) : '',
                     self::COLUMN_SEX => isset($properties[self::COLUMN_SEX]) ? htmlspecialchars(trim($properties[self::COLUMN_SEX])) : '',
                     self::COLUMN_ICON => isset($properties[self::COLUMN_ICON]) ? htmlspecialchars(trim($properties[self::COLUMN_ICON])) : '',
-                    self::COLUMN_ROLE => "NORMALUSER"
+                    self::COLUMN_ROLE => "NORMALUSER",
+                    self::COLUMN_EMAIL_SUBSCRIPTION => isset($properties[self::COLUMN_EMAIL_SUBSCRIPTION]) ? htmlspecialchars(trim($properties[self::COLUMN_EMAIL_SUBSCRIPTION])) : 0,    
                 ];
                 if (isset($properties[self::COLUMN_PASSWORD_HASH])) {
                     $updateData[self::COLUMN_PASSWORD_HASH] = $this->passwords->hash($properties[self::COLUMN_PASSWORD_HASH]);

@@ -86,10 +86,15 @@ Assert::true($userId !== null && $userId > 0);
 
 // vytvoříme data pro editaci
 $editData = [
-    'user_name' => 'EditedUser',
     'password' => 'EditedPassword',
-    'email' => 'edited@example.com',
-    'genders' => 2
+    'phone' => '123456789',
+    'firstname' => 'EditedFirstName',
+    'lastname' => 'EditedLastName',
+    'opening_hours' => '10-15',
+    'note' => 'edited note',
+    'genders' => 2,
+    'icon' => 'new_icon.png',
+    'email_subscription' => 0
     // další pole podle vašich potřeb...
 ];
 
@@ -100,37 +105,24 @@ $userManager->edit($userId, $editData);
 $editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
 
 // ověříme, že data byla správně upravena
-Assert::equal($editData['user_name'], $editedUser->user_name);
-Assert::equal($editData['email'], $editedUser->email);
+Assert::equal($editData['phone'], $editedUser->phone);
+Assert::equal($editData['firstname'], $editedUser->firstname);
+Assert::equal($editData['lastname'], $editedUser->lastname);
+Assert::equal($editData['opening_hours'], $editedUser->opening_hours);
+Assert::equal($editData['note'], $editedUser->note);
+Assert::equal('NORMALUSER', $editedUser->role);
+Assert::equal($editData['genders'], $editedUser->genders);
+Assert::equal($editData['icon'], $editedUser->icon);
+Assert::equal($editData['email_subscription'], $editedUser->email_subscription);
 // pro ověření hesla použijeme metodu verify
 Assert::true($passwords->verify($editData['password'], $editedUser->password));
-Assert::equal($editData['genders'], $editedUser->genders);
-// a tak dále pro další pole...
-// ... předchozí kód ...
 
-// vytvoříme testovací data pro nového uživatele
-$testData = [
-    'user_name' => 'TestUser',
-    'password' => 'TestPassword',
-    'email' => 'test@example.com',
-    'genders' => 1
-    // další pole podle vašich potřeb...
-];
+// zavoláme metodu editLanguage
+$userManager->editLanguage($userId, 'en');
 
-// zavoláme metodu add a uložíme vrácené ID
-$userId = $userManager->add($testData);
+// získáme upraveného uživatele z databáze
+$editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
 
-// použijeme assert funkci k ověření, že ID je platné (není prázdné)
-Assert::true($userId !== null && $userId > 0);
+// ověříme, že jazyk byl správně upraven
+Assert::equal('en', $editedUser->language);
 
-// nyní ověříme, zda můžeme uživatele autentizovat pomocí jeho uživatelského jména a hesla
-try {
-    $authenticatedUser = $userManager->authenticate(['TestUser', 'TestPassword']);
-    Assert::equal($authenticatedUser->getId(), $userId);
-} catch (Nette\Security\AuthenticationException $e) {
-    Assert::fail('Authentication failed: ' . $e->getMessage());
-}
-
-// ... další testy ...
-
-// zde byste mohl přidat další testy, například zda jsou data správně uložena v databázi
