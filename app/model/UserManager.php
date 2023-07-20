@@ -207,6 +207,27 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator
             throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
         }
     }
+    
+    public function deleteUser($id, $adminId = null)
+    {
+        $user = $this->database->table(self::TABLE_NAME)->get($id);
+        if (!empty($user)){
+            // Check if the user is deleting themselves or if an admin is deleting the user
+            if ($user->id == $id || $user->id == $adminId) {
+                try {
+                    $user->delete();
+                } catch (PDOException $e) {
+                    $this->logError('Chyba při mazání uživatele: ' . $e->getMessage());
+                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_delete"), 'error');
+                }
+            } else {
+                throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.unauthorized"));
+            }
+        } else {
+            throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorrect_user"));
+        }
+    }
+
 }
 
 

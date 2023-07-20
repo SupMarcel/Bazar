@@ -1,4 +1,5 @@
 <?php
+
 require '../../../vendor/autoload.php';
 
 use App\Model\UserManager;
@@ -11,16 +12,14 @@ use Nette\Security\Passwords;
 use Contributte\Translation\Translator;
 use Tracy\ILogger;
 
-
 Tester\Environment::lock('mockery', __DIR__ . '/temp');
 register_shutdown_function(function () {
     Mockery::close();
 });
 
-
-
 // předpokládám, že máte třídu Logger implementující ILogger
 $logger = new class implements ILogger {
+
     public function log($value, $priority = self::INFO) {
         // implementace metody log
     }
@@ -48,7 +47,7 @@ $userManager = new UserManager($database, $logger, $passwords, $translator);
 
 // vytvoříme testovací data
 $testData = [
-    'user_name' => 'TestUser',
+    'user_name' => 'TestUser4',
     'password' => 'TestPassword',
     'email' => 'test@example.com',
     'phone' => '603165921',
@@ -57,10 +56,10 @@ $testData = [
     'opening_hours' => '9-12',
     'note' => 'zkouška',
     'role' => 'žádná',
-    'genders' => 1 ,
+    'genders' => 1,
     'icon' => null,
-    'email_subscription' => 1 
-    // další pole podle vašich potřeb...
+    'email_subscription' => 1
+        // další pole podle vašich potřeb...
 ];
 
 // zavoláme metodu add a uložíme vrácené ID
@@ -69,24 +68,11 @@ $userId = $userManager->add($testData);
 // použijeme assert funkci k ověření, že ID je platné (není prázdné)
 Assert::true($userId !== null && $userId > 0);
 
-// vytvoříme testovací data
-$testData = [
-    'user_name' => 'TestUser',
-    'password' => 'TestPassword',
-    'email' => 'test@example.com',
-    'genders' => 1
-    // další pole podle vašich potřeb...
-];
 
-// zavoláme metodu add a uložíme vrácené ID
-$userId = $userManager->add($testData);
-
-// použijeme assert funkci k ověření, že ID je platné (není prázdné)
-Assert::true($userId !== null && $userId > 0);
 
 // vytvoříme data pro editaci
 $editData = [
-    'password' => 'EditedPassword',
+    'password' => 'Edited',
     'phone' => '123456789',
     'firstname' => 'EditedFirstName',
     'lastname' => 'EditedLastName',
@@ -95,7 +81,7 @@ $editData = [
     'genders' => 2,
     'icon' => 'new_icon.png',
     'email_subscription' => 0
-    // další pole podle vašich potřeb...
+        // další pole podle vašich potřeb...
 ];
 
 // zavoláme metodu edit
@@ -125,4 +111,29 @@ $editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
 
 // ověříme, že jazyk byl správně upraven
 Assert::equal('en', $editedUser->language);
+
+// Test the authenticate function
+try {
+    // Authenticate the user
+    $identity = $userManager->authenticate([$testData['user_name'], 'Edited']);
+
+
+
+    // Assert that the returned identity is not null and has the correct username
+    Assert::notNull($identity);
+    Assert::equal($testData['user_name'], $identity->getData()[UserManager::COLUMN_NAME]);
+} catch (Nette\Security\AuthenticationException $e) {
+    // If an exception is thrown, fail the test
+    Assert::fail($e->getMessage());
+} 
+
+// Delete the user
+$userManager->deleteUser($userId);
+
+// Try to fetch the user
+$user = $userManager->get($userId);
+
+// Assert that the user does not exist
+Assert::null($user);
+
 
