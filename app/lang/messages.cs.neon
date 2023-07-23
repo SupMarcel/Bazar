@@ -27,6 +27,8 @@ UserManager:
     error_edit : "Bohužel se nepodařilo změnit Vaše údaje - zkuste je změnit znovu"
     error_language : "Nepodařilo se nastavit Vámi preferovaný jazyk"
     error_active_address : "Nepodařilo se nastavit Vaši aktivní adresu"
+    error_deleting_user : 'Došlo k chybě při mazání uživatele.'
+    not_permision_delete_user : "Nemáte oprávnění mazat tohoto uživatele."
 
 address:
     street_house_number: "ulice a číslo domu"

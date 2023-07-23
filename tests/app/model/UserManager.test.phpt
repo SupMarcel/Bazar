@@ -41,13 +41,15 @@ $translator = Mockery::mock(Translator::class);
 // v tomto případě říkáme, že když je zavolána metoda translate, vrátí se řetězec 'translated text'
 $translator->shouldReceive('translate')->andReturn('translated text');
 
+
+
 $passwords = new Passwords();
 
 $userManager = new UserManager($database, $logger, $passwords, $translator);
 
 // vytvoříme testovací data
 $testData = [
-    'user_name' => 'TestUser4',
+    'user_name' => 'TestUser7',
     'password' => 'TestPassword',
     'email' => 'test@example.com',
     'phone' => '603165921',
@@ -68,7 +70,10 @@ $userId = $userManager->add($testData);
 // použijeme assert funkci k ověření, že ID je platné (není prázdné)
 Assert::true($userId !== null && $userId > 0);
 
-
+// vytvoříme mock objekt pro třídu Nette\Security\User
+$mockUser = Mockery::mock('overload:Nette\Security\User');
+$mockUser->shouldReceive('getId')->andReturn($userId);
+$mockUser->shouldReceive('isInRole')->with('admin')->andReturn(false);
 
 // vytvoříme data pro editaci
 $editData = [
@@ -85,7 +90,7 @@ $editData = [
 ];
 
 // zavoláme metodu edit
-$userManager->edit($userId, $editData);
+$userManager->edit($userId, $editData, $mockUser);
 
 // získáme upraveného uživatele z databáze
 $editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
@@ -102,9 +107,8 @@ Assert::equal($editData['icon'], $editedUser->icon);
 Assert::equal($editData['email_subscription'], $editedUser->email_subscription);
 // pro ověření hesla použijeme metodu verify
 Assert::true($passwords->verify($editData['password'], $editedUser->password));
-
 // zavoláme metodu editLanguage
-$userManager->editLanguage($userId, 'en');
+$userManager->editLanguage($userId, 'en', $mockUser);
 
 // získáme upraveného uživatele z databáze
 $editedUser = $database->table(UserManager::TABLE_NAME)->get($userId);
@@ -128,7 +132,7 @@ try {
 } 
 
 // Delete the user
-$userManager->deleteUser($userId);
+$userManager->deleteUser($userId, $mockUser);
 
 // Try to fetch the user
 $user = $userManager->get($userId);
