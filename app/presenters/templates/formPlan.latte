@@ -95,7 +95,7 @@
     window.onload = function () {
         let countAddresses = 0;
         let complet = document.createElement('div');
-        let inputElements = document.querySelectorAll('div.form-component:has(.formPlan)');
+        let inputElements = Array.from(document.querySelectorAll('div.form-component')).filter(el => el.querySelector('.formPlan'));
         let form = document.querySelector('form');
         let phone = document.querySelector("input[name='phone']").parentElement;
         form.insertBefore(complet, phone);
@@ -149,9 +149,9 @@
     };
 </script> 
 <script>
-    function removeAddress(adressId = "") {
+    function removeAddress(addressId = "") {
         if (confirm({_messages.offer.editLatte.js.delete_address})) {
-            if (adressId != ""){
+            if (addressId != ""){
             let data = {"addressId": addressId};
                 $.nette.ajax({
                     type: 'DELETE',
@@ -272,7 +272,7 @@
         for (let nextAddressButton of nextAddressButtons){
             nextAddressButton.hidden = true;
         }
-        let inputElements = document.querySelectorAll('div.form-component:has(.formPlan)');
+        let inputElements = Array.from(document.querySelectorAll('div.form-component')).filter(el => el.querySelector('.formPlan') !== null);
         let complet = document.createElement('div');
         complet.id = 'complet'+ formPlanIndex;
         for (let inputElement of inputElements) {
