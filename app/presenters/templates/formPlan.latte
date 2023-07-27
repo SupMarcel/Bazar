@@ -6,7 +6,7 @@
     window.load = function () {
         Loader.async = true;
         Loader.load(null, { suggest: true }, createSuggest);
-    }
+    };
 
     window.createSuggest = function () {
         var inputEl = document.getElementById('text-address');
@@ -14,7 +14,7 @@
         var suggest = new SMap.Suggest(inputEl);
         var lastSuggestData = null;
         suggest.urlParams({
-            lang: {$actualLanguageCode}
+            lang: "{$actualLanguageCode}"
         });
         suggest.addListener("suggest", function (suggestData) {
             // vyber polozky z naseptavace
@@ -28,7 +28,7 @@
                     'x-szn-sdk': 'HgUbCgUbGkgqAQkYBxYEHQNHQlJcQlBSQ1xbQg=='
                 },
                 data: {
-                    lang: {$actualLanguageCode},
+                    lang: "{$actualLanguageCode}",
                     count: 1,
                     phrase: suggestData.phrase
                 },
@@ -58,7 +58,6 @@
                                         addNextAddressButton.onclick = insertComplet;
                                         let removeAddressButton = document.getElementById('removeAddress');
                                         removeAddressButton.hidden=false;
-                                        removeAddressButton.onclick = clearAddress;
                                     }
                                     break;
                                 case "latitude":
@@ -149,7 +148,9 @@
     };
 </script> 
 <script>
-    function removeAddress(addressId = "") {
+    function removeAddress(event, addressId = "") {
+        event.preventDefault();
+        console.log("Removing address with ID:", addressId);
         if (confirm({_messages.offer.editLatte.js.delete_address})) {
             if (addressId != ""){
             let data = {"addressId": addressId};
@@ -175,7 +176,8 @@
         }
     }
 
-    function clearAddress(addressId = "") {
+    function clearAddress(event,  addressId = "") {
+        event.preventDefault();
         if (confirm({_messages.offer.editLatte.js.delete_address})) {
             if (addressId != ""){
                 let data = {"addressId": addressId};
@@ -333,7 +335,7 @@
             var suggest = new SMap.Suggest(inputEl);
             var lastSuggestData = null;
              suggest.urlParams({
-              lang: {$actualLanguageCode}
+              lang: "{$actualLanguageCode}"
              }); 
             suggest.addListener("suggest", function (suggestData) {
                 // vyber polozky z naseptavace

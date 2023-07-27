@@ -267,7 +267,7 @@ class SignUpFormFactory extends FormFactory
             $form->addButton('removeAddress', 'removedAddress')
                  ->setHtmlAttribute("hidden", "true")
                  ->setHtmlAttribute("id", "removeAddress")
-                 ->setHtmlAttribute("onclick", "clearAddress")   
+                 ->setHtmlAttribute("onclick", "function(event){clearAddress}")   
                  ->setHtmlAttribute('class','formPlan fancyform removeAddress');   
             $form->addText(AddressManager::COLUMN_ID, '')
                  ->setHtmlAttribute("hidden", "true")
@@ -324,7 +324,6 @@ class SignUpFormFactory extends FormFactory
                         $form->addButton('removeAddress'.$i, 'removedAddress'.$i)
                              
                              ->setHtmlAttribute("id", "removeAddress".$i)
-                             ->setHtmlAttribute("onclick", "removeAddress")   
                              ->setHtmlAttribute('class','formPlan fancyform removeAddress');
                         $form->addText(AddressManager::COLUMN_ID.$i, '')
                              ->setHtmlAttribute("hidden", "true")
