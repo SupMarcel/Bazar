@@ -29,6 +29,7 @@ UserManager:
     error_active_address : "Nepodařilo se nastavit Vaši aktivní adresu"
     error_deleting_user : 'Došlo k chybě při mazání uživatele.'
     not_permision_delete_user : "Nemáte oprávnění mazat tohoto uživatele."
+    error_user_name : "Toto uživatlské jméno již bylo zaregistrováno. Zadejte nové jméno !"
 
 address:
     street_house_number: "ulice a číslo domu"
@@ -269,6 +270,9 @@ editForm:
     change data: "změnit údaje"
     fill your email: "Prosím vyplňte toto pole Vaší emailovou adresou"
     choose a password: "Prosím vyberte si heslo"
+    new password: "Nové heslo"
+    confirm new password: "Potvrzení nového hesla"
+    passwords do not match: "Hesla se neshodují."
 
 FilterForm:
     all: "všichni prodejci"

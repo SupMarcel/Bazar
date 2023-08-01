@@ -29,7 +29,7 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
             COLUMN_NOTE = 'note',
             COLUMN_ROLE = 'role',
             COLUMN_SEX = 'genders',
-            COLUMN_ICON = 'icon',
+            COLUMN_ICON = 'photo_id',
             COLUMN_EMAIL_SUBSCRIPTION = 'email_subscription',
             COLUMN_ACTIVE_ADDRESS_ID = 'active_address_id',
             COLUMN_LANGUAGE = 'language';
@@ -92,7 +92,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
             return $row->id;
         } catch (PDOException $e) {
             $this->logError('Chyba při registraci uživatele: ' . $e->getMessage());
-            $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_register"), 'error');
+            //$this->getPresenter()->flashMessage($this->translator->translate("messages.UserManager.error_register"), 'error');
+        }catch(Nette\Database\UniqueConstraintViolationException $e){
+            $this->logError('Uživatelské jméno je již zaregistrováno ' . $e->getMessage());
+           // $this->getPresenter()->flashMessage($this->translator->translate("messages.UserManager.error_user_name"), 'error');
         }
     }
 
@@ -144,13 +147,13 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
                     $user->update($updateData);
                 } catch (PDOException $e) {
                     $this->logError('Chyba při zápisu změny údajů uživatele: ' . $e->getMessage());
-                    $this->getPresenter()->flashMessage($this->translator->translate("messages.UserManager.error_edit"), 'error');
+                   // $this->getPresenter()->flashMessage($this->translator->translate("messages.UserManager.error_edit"), 'error');
                 }
             } else {
                 throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
             }
         } else {
-            $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
+           // $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
         }
     }
 
@@ -164,34 +167,30 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
                     ]);
                 } catch (PDOException $e) {
                     $this->logError('Chyba při editaci jazyka uživatele: ' . $e->getMessage());
-                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_language"), 'error');
+                   // $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_language"), 'error');
                 }
             } else {
                 throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
             }
         } else {
-            $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
+          //  $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
         }
     }
 
-    public function editActiveAddress($id, $activeAddressId, User $currentUser) {
-        if ($this->hasPermission($currentUser, $id)) {
-            $user = $this->database->table(self::TABLE_NAME)->get($id);
-            if (!empty($user)) {
-                try {
-                    $user->update([
-                        self::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
-                    ]);
-                } catch (PDOException $e) {
+    public function editActiveAddress($id, $activeAddressId) {
+        $user = $this->database->table(self::TABLE_NAME)->get($id);
+        if (!empty($user)) {
+            try {
+                $user->update([
+                    self::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
+                ]);
+            } catch (PDOException $e) {
                     $this->logError('Chyba při změně aktivní adresy: ' . $e->getMessage());
-                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
-                }
-            } else {
-                throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
-            }
+                   // $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
+              }
         } else {
-            $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
-        }
+                throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
+          }
     }
 
     public function cancelEmailSubscription($id, User $currentUser) {
@@ -204,13 +203,13 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
                     ]);
                 } catch (PDOException $e) {
                     $this->logError('Chyba při změně aktivní adresy: ' . $e->getMessage());
-                    $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
+                   // $this->presenter->flashMessage($this->translator->translate("messages.UserManager.error_active_address"), 'error');
                 }
             } else {
                 throw new Nette\Neon\Exception($this->translator->translate("messages.UserManager.incorect_user"));
             }
         } else {
-            $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
+          //  $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
         }
     }
 
@@ -221,10 +220,10 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
             } catch (\PDOException $e) {
                 // Zalogování chyby
                 $this->logError('Chyba při mazání uživatele: ' . $e->getMessage());
-                $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.error_deleting_user'), 'error');
+               // $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.error_deleting_user'), 'error');
             }
         } else {
-            $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
+           // $this->getPresenter()->flashMessage($this->translator->translate('messages.UserManager.not_permision_delete_user'), 'error');
         }
     }
 }

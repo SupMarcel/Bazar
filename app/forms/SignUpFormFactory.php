@@ -7,7 +7,7 @@ use Nette;
 use Nette\Application\UI\Form;
 use App\Model\RegistrationManager;
 use App\Model\AddressManager;
-use Nette\Database;
+use App\Model\PhotoManager;
 use App\Model\DuplicateNameException;
 
 
@@ -24,15 +24,18 @@ class SignUpFormFactory extends FormFactory
 	private $registrationManager;
 	private $user;
         private $addressManager;
+        private $photoManager;
      
 	public function __construct(UserManager $userManager,
                                 RegistrationManager $registrationManager,
-                                AddressManager $addressManager)
+                                AddressManager $addressManager,
+                                PhotoManager $photoManager )
 	{
 		$this->userManager = $userManager;
 		$this->registrationManager = $registrationManager;
 		$this->user = null;
                 $this->addressManager = $addressManager;
+                $this->photoManager = $photoManager;
    	}
 
 
@@ -48,14 +51,6 @@ class SignUpFormFactory extends FormFactory
         $identityArray = $activeAddress->toArray(); // IRow je read-only, pro manipulaci s ním ho musíme převést na pole.
         $identityArray = array_merge($identityArray,$userArray);
         $userId = $identity->{UserManager::COLUMN_ID};
-        /*$activeAddress = $this->addressManager->get($identityArray[UserManager::COLUMN_ACTIVE_ADDRESS_ID]);
-        $identityArray[AddressManager::COLUMN_ID] = $activeAddress->{AddressManager::COLUMN_ID};
-        $identityArray[AddressManager::COLUMN_STREET] = $activeAddress->{AddressManager::COLUMN_STREET};
-        $identityArray[AddressManager::COLUMN_CITY] = $activeAddress->{AddressManager::COLUMN_CITY};
-        $identityArray[AddressManager::COLUMN_REGION]= $activeAddress->{AddressManager::COLUMN_REGION};
-        $identityArray[AddressManager::COLUMN_ZIP_CODE]= $activeAddress->{AddressManager::COLUMN_ZIP_CODE};
-        $identityArray[AddressManager::COLUMN_STATE] = $activeAddress->{AddressManager::COLUMN_STATE};*/       
-        
         $countAddresses = $this->addressManager->countAddresses($userId);
         $form = $this->createForm(false, $userId);        
          if ($countAddresses>1){
@@ -144,6 +139,9 @@ class SignUpFormFactory extends FormFactory
                 UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE],
                 UserManager::COLUMN_ACTIVE_ADDRESS_ID => $activeAddressId
             ];
+            if (!empty($values['new_password'])) {
+                $properties[UserManager::COLUMN_PASSWORD_HASH] = $values['new_password'];
+            }
             $this->userManager->edit($this->user, $properties);
         };
 	    return $form;
@@ -159,17 +157,12 @@ class SignUpFormFactory extends FormFactory
 		$form->onSuccess[] = function (Form $form, $values) use ($onSuccess) {
 			try {
                             $values = $form->getHttpData();
-                           
-                            $filename = null;
-                            if(!empty($values["icon"])){
-                                $filename = $values["icon"]->getName();
-                                $path = __DIR__ . "/../../www/images/icons/" . $filename;
-                                while(file_exists($path)) {
-                                    $filename = "0".$filename;
-                                    $path = __DIR__ . "/../../www/images/icons/" . $filename;
-                                }
-                                $values["icon"]->move($path);
-                            }
+                           try{
+                               $iconId = $this->photoManager->addIconPhoto($values['photo_id'], $values['genders']);
+                           } catch (Exception $ex) {
+                               $form[UserManager::COLUMN_ICON]->addError($this->translator->translate('messages.registrationForm.error_icon'));
+				return;
+                           }
 
 			    $array = [UserManager::COLUMN_NAME => $values[UserManager::COLUMN_NAME],
                                       UserManager::COLUMN_EMAIL => $values[UserManager::COLUMN_EMAIL],
@@ -179,11 +172,11 @@ class SignUpFormFactory extends FormFactory
                                       UserManager::COLUMN_LASTNAME => $values[UserManager::COLUMN_LASTNAME],
                                       UserManager::COLUMN_TIME => $values[UserManager::COLUMN_TIME],
                                       UserManager::COLUMN_SEX => $values[UserManager::COLUMN_SEX],
-                                      UserManager::COLUMN_ICON => $filename,
+                                      UserManager::COLUMN_ICON => $iconId,
                                       UserManager::COLUMN_ACTIVE_ADDRESS_ID => null,
                                       UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE]];
                             $userId = $this->userManager->add($array);
-                            
+                            bdump($userId);
                             $completAddress = [AddressManager::COLUMN_STREET => $values[AddressManager::COLUMN_STREET],
                                                AddressManager::COLUMN_CITY => $values[AddressManager::COLUMN_CITY],
                                                AddressManager::COLUMN_REGION => $values[AddressManager::COLUMN_REGION],
@@ -196,7 +189,7 @@ class SignUpFormFactory extends FormFactory
                             
                             if(!empty($values['countAddresses'])){
                                 $countAdresses = intval($values['countAddresses']);
-                                for($i=1;$i<$countAdresses+1;$i++){
+                                for($i=2;$i<$countAdresses+1;$i++){
                                     $completAddress = [AddressManager::COLUMN_STREET => $values[AddressManager::COLUMN_STREET.$i],
                                                AddressManager::COLUMN_CITY => $values[AddressManager::COLUMN_CITY.$i],
                                                AddressManager::COLUMN_REGION => $values[AddressManager::COLUMN_REGION.$i],
@@ -224,6 +217,17 @@ class SignUpFormFactory extends FormFactory
         
         protected function createForm($registration = false, $userId = null){
             $form = $this->create();
+            if (!$registration) {
+                $form->addPassword('new_password', $this->translator->translate('editForm.new password'))
+                     ->setHtmlAttribute('class', 'fancyform')
+                     ->addCondition($form::FILLED)
+                     ->addRule($form::MIN_LENGTH, sprintf($this->translator->translate('editForm.choose a password'), self::PASSWORD_MIN_LENGTH), self::PASSWORD_MIN_LENGTH);
+
+                $form->addPassword('confirm_password', $this->translator->translate('editForm.confirm new password'))
+                     ->setHtmlAttribute('class', 'fancyform')
+                     ->addConditionOn($form['new_password'], $form::FILLED)
+                     ->addRule($form::EQUAL, $this->translator->translate('editForm.passwords do not match'), $form['new_password']);
+            }
             $form->addText(UserManager::COLUMN_FIRSTNAME, $this->translator->translate ('messages.user.'.UserManager::COLUMN_FIRSTNAME))
                  ->setRequired(true)
                  ->setHtmlAttribute('class','fancyform');
@@ -268,12 +272,19 @@ class SignUpFormFactory extends FormFactory
                  ->setHtmlAttribute("hidden", "true")
                  ->setHtmlAttribute("id", "removeAddress")
                  ->setHtmlAttribute("onclick", "function(event){clearAddress}")   
-                 ->setHtmlAttribute('class','formPlan fancyform removeAddress');   
-            $form->addText(AddressManager::COLUMN_ID, '')
-                 ->setHtmlAttribute("hidden", "true")
-                 ->setRequired()
-                 ->setHtmlAttribute("id", "activeAddress")
-                 ->setHtmlAttribute('class','formPlan fancyform activeAddress');
+                 ->setHtmlAttribute('class','formPlan fancyform removeAddress'); 
+            if (!$registration) {
+                $form->addText(AddressManager::COLUMN_ID, '')
+                     ->setHtmlAttribute("hidden", "true")
+                     ->setRequired()
+                     ->setHtmlAttribute("id", "activeAddress")
+                     ->setHtmlAttribute('class','formPlan fancyform activeAddress');
+            } else {
+                $form->addText(AddressManager::COLUMN_ID, '')
+                     ->setHtmlAttribute("hidden", "true")
+                     ->setHtmlAttribute("id", "activeAddress")
+                     ->setHtmlAttribute('class','formPlan fancyform activeAddress');
+            }
             $form->addButton('activeButton', 'Aktivní adresa')
                  ->setHtmlAttribute("id", "activeButton")
                  ->setHtmlAttribute('class','formPlan fancyform activeButton'); 

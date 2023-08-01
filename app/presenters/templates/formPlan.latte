@@ -14,7 +14,7 @@
         var suggest = new SMap.Suggest(inputEl);
         var lastSuggestData = null;
         suggest.urlParams({
-            lang: "{$actualLanguageCode}"
+            lang: {$actualLanguageCode}
         });
         suggest.addListener("suggest", function (suggestData) {
             // vyber polozky z naseptavace
@@ -28,7 +28,7 @@
                     'x-szn-sdk': 'HgUbCgUbGkgqAQkYBxYEHQNHQlJcQlBSQ1xbQg=='
                 },
                 data: {
-                    lang: "{$actualLanguageCode}",
+                    lang: {$actualLanguageCode},
                     count: 1,
                     phrase: suggestData.phrase
                 },
@@ -335,7 +335,7 @@
             var suggest = new SMap.Suggest(inputEl);
             var lastSuggestData = null;
              suggest.urlParams({
-              lang: "{$actualLanguageCode}"
+              lang: {$actualLanguageCode}
              }); 
             suggest.addListener("suggest", function (suggestData) {
                 // vyber polozky z naseptavace

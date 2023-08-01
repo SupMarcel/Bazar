@@ -324,4 +324,29 @@ class PhotoManager extends BaseManager
             ]
         );
     }
+    
+    public function addIconPhoto($iconPhoto, $genders) {
+        if(!empty($iconPhoto)){
+            $iconPhotoId = $this->getNextId();
+            $name = $iconPhoto->getSanitizedName();
+             $this->database->table(self::TABLE_NAME)->insert([
+            self::COLUMN_ID => $iconPhotoId,
+            self::COLUMN_PATH => $iconPhotoId.$name,
+              ]);
+              // Vytvořte adresář, pokud neexistuje
+            $directoryPath = __DIR__ . "/../../www/images/offers/";
+            if (!is_dir($directoryPath)) {
+                mkdir($directoryPath, 0777, true);  // Parametr true umožní vytvoření více vnořených adresářů
+            } 
+            $path = $directoryPath.$iconPhotoId.$name;
+            $iconPhoto->move($path); 
+            return $iconPhotoId; 
+        }else{
+            if ($genders == 0){
+                return 94;
+            }else{
+                 return 95; 
+            }
+        }
+    }
 }

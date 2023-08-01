@@ -63,11 +63,13 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             $locale = $_SESSION["__NF"]["DATA"]["Contributte\Translation\LocalesResolvers\Session"]['locale'];
         }
         if ($this->getUser()->isLoggedIn()){
-            $user = $this->userManager->get($this->getUser()->id);
-            if($user->language != $locale){
-               $this->userManager->editLanguage($user->id, $locale); 
+            $seller = $this->userManager->get($this->getUser()->id);
+            $this->template->seller = $seller;
+            if($seller->language != $locale){
+               $this->userManager->editLanguage($seller->id, $locale); 
             }
         }
+        
         $this->template->setTranslator($this->translator);       
         $this->template->actualLanguageCode = $locale;
         $this->template->languages = $languages;
