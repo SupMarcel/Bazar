@@ -109,7 +109,8 @@ class UserManager extends BaseManager implements Nette\Security\IAuthenticator {
             self::COLUMN_TIME,
             self::COLUMN_NOTE,
             self::COLUMN_SEX,
-            self::COLUMN_ICON
+            self::COLUMN_ICON,
+            self::COLUMN_LANGUAGE
         ];
 
         $sanitizedProperties = [];

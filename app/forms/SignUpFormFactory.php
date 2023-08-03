@@ -174,9 +174,9 @@ class SignUpFormFactory extends FormFactory
                                       UserManager::COLUMN_SEX => $values[UserManager::COLUMN_SEX],
                                       UserManager::COLUMN_ICON => $iconId,
                                       UserManager::COLUMN_ACTIVE_ADDRESS_ID => null,
-                                      UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE]];
+                                      UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE],
+                                      UserManager::COLUMN_LANGUAGE => $form->getPresenter()->locale];
                             $userId = $this->userManager->add($array);
-                            bdump($userId);
                             $completAddress = [AddressManager::COLUMN_STREET => $values[AddressManager::COLUMN_STREET],
                                                AddressManager::COLUMN_CITY => $values[AddressManager::COLUMN_CITY],
                                                AddressManager::COLUMN_REGION => $values[AddressManager::COLUMN_REGION],
@@ -293,7 +293,7 @@ class SignUpFormFactory extends FormFactory
             if ($registration) {
                 $form->addEmail(UserManager::COLUMN_EMAIL, $this->translator->translate ('messages.user.'.UserManager::COLUMN_EMAIL))
 		     ->setRequired($this->translator->translate("messages.editForm.fill your email"))
-                     ->setHtmlAttribute('class','fancyform');   
+                     ->setHtmlAttribute('class','fancyform'); 
             } else {
                 $countAddresses = $this->addressManager->countAddresses($userId);
                 if($countAddresses>1){

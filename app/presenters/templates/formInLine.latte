@@ -6,8 +6,7 @@
  <ul class="errors list-unstyled" n:if="$form->hasErrors()">
         <li class="text-danger" n:foreach="$form->errors as $error"><strong>{$error}</strong></li>
  </ul> 
- <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>       
-{foreach $form->controls as $input}
+ {foreach $form->controls as $input}
     {var $button = $input->controlPrototype->type == 'submit'}
     <div  n:class= "$button ? col-auto : col-2">
         {label $input /}
