@@ -17,6 +17,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     const MSG_SUCCESS = 'success';
     /** Zpráva typy chyba. */
     const MSG_ERROR = 'danger';
+    
+    const LANGUAGES = ['cs'=>'Czech',
+                      'en'=>'English'];
+    
     /** @var Nette\Localization\ITranslator @inject */
     public $translator;
 
@@ -24,6 +28,8 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     public $translatorSessionResolver;
     /** @var UserManager */
     protected $userManager;
+    
+    
     
     public function injectUserManager(UserManager $userManager){
         $this->userManager = $userManager;
@@ -41,40 +47,49 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
 	$this->redirect('this');
     }
-   
-      /** Před vykreslováním každé akce u všech presenterů předává společné proměné do celkového layoutu webu. */
-    protected function beforeRender()
-    {
-        parent::beforeRender();
-        
-        $languages = ['cs'=>'Czech',
-                      'en'=>'English'];
-        
-        if (!isset($_SESSION["__NF"]["DATA"]["Contributte\Translation\LocalesResolvers\Session"]['locale'])) {
+    
+    protected function languageCode() {
+       if (!isset($_SESSION["__NF"]["DATA"]["Contributte\Translation\LocalesResolvers\Session"]['locale'])) {
             if (isset($_COOKIE['language'])) {
                 $locale = $_COOKIE['language'];
                 $this->translatorSessionResolver->setLocale($_COOKIE['language']);
             } else {
-                $locale = $this->getHttpRequest()->detectLanguage(array_keys($languages));
+                $locale = $this->getHttpRequest()->detectLanguage(array_keys(self::LANGUAGES));
                 $this->translatorSessionResolver->setLocale($locale);
                 setcookie('language', $locale, 0, "/");
             }
         } else {
             $locale = $_SESSION["__NF"]["DATA"]["Contributte\Translation\LocalesResolvers\Session"]['locale'];
         }
+        return $locale;
+    }
+    
+    protected function getSeller() {
         if ($this->getUser()->isLoggedIn()){
             $seller = $this->userManager->get($this->getUser()->id);
-            $this->template->seller = $seller;
-            if($seller->language != $locale){
-               $this->userManager->editLanguage($seller->id, $locale); 
+        }else {
+            $seller = null;
+        } 
+        return $seller;
+    }
+   
+      /** Před vykreslováním každé akce u všech presenterů předává společné proměné do celkového layoutu webu. */
+    protected function beforeRender()
+    {
+        parent::beforeRender();
+       
+        if (!empty($this->getSeller())){
+            $this->template->seller = $this->getSeller();
+            if($this->getSeller()->language != $this->languageCode()){
+               $this->userManager->editLanguage($this->getSeller()->id, $this->languageCode()); 
             }
         }
         
         $this->template->setTranslator($this->translator);       
-        $this->template->actualLanguageCode = $locale;
-        $this->template->languages = $languages;
-        foreach ($languages as $key => $value){
-           if ($key != $locale) {
+        $this->template->actualLanguageCode = $this->languageCode();
+        $this->template->languages = self::LANGUAGES;
+        foreach (self::LANGUAGES as $key => $value){
+           if ($key != $this->languageCode()) {
                continue;
            }
             $this->template->actualLanquage = $this->translator->translate($value);

@@ -152,7 +152,7 @@ class SignUpFormFactory extends FormFactory
 	 */
 	public function createRegistrationForm(callable $onSuccess)
 	{       $addresses = [];
-		$form = $this->createForm(true);
+                $form = $this->createForm(true);
 
 		$form->onSuccess[] = function (Form $form, $values) use ($onSuccess) {
 			try {
@@ -174,8 +174,8 @@ class SignUpFormFactory extends FormFactory
                                       UserManager::COLUMN_SEX => $values[UserManager::COLUMN_SEX],
                                       UserManager::COLUMN_ICON => $iconId,
                                       UserManager::COLUMN_ACTIVE_ADDRESS_ID => null,
-                                      UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE],
-                                      UserManager::COLUMN_LANGUAGE => $form->getPresenter()->locale];
+                                      UserManager::COLUMN_NOTE => $values[UserManager::COLUMN_NOTE]];
+                                     // UserManager::COLUMN_LANGUAGE => $locale];
                             $userId = $this->userManager->add($array);
                             $completAddress = [AddressManager::COLUMN_STREET => $values[AddressManager::COLUMN_STREET],
                                                AddressManager::COLUMN_CITY => $values[AddressManager::COLUMN_CITY],

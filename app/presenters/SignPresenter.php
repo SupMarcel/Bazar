@@ -65,6 +65,8 @@ class SignPresenter extends BasePresenter
 			$this->redirect('Homepage:');
 		});
 	}
+        
+        
 
     public function renderIn(){
         $this->template->loggedIn = $this->getUser()->id !== null;
