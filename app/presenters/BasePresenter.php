@@ -18,7 +18,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     /** Zpráva typy chyba. */
     const MSG_ERROR = 'danger';
     
-    const LANGUAGES = ['cs'=>'Czech',
+    const LANGUAGES = ['cs-cz'=>'Czech',
                       'en'=>'English'];
     
     /** @var Nette\Localization\ITranslator @inject */
@@ -72,7 +72,30 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         } 
         return $seller;
     }
-   
+    
+    
+    private function languagesValue() {
+        $languesValue = null; 
+        foreach (self::LANGUAGES as $key => $value){
+           if ($key != $this->languageCode()) {
+               continue;
+           }
+          $languesValue= $this->translator->translate($value);
+        }  
+        return $languesValue;
+    }  
+    
+    private function languagesKey() {
+        $languesKey = null;
+        foreach (self::LANGUAGES as $key => $value){
+           if ($key != $this->languageCode()) {
+               continue;
+           }
+          $languesKey = $key;
+        }  
+        return $languesKey;
+    }
+    
       /** Před vykreslováním každé akce u všech presenterů předává společné proměné do celkového layoutu webu. */
     protected function beforeRender()
     {
@@ -88,13 +111,8 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->template->setTranslator($this->translator);       
         $this->template->actualLanguageCode = $this->languageCode();
         $this->template->languages = self::LANGUAGES;
-        foreach (self::LANGUAGES as $key => $value){
-           if ($key != $this->languageCode()) {
-               continue;
-           }
-            $this->template->actualLanquage = $this->translator->translate($value);
-            $this->template->actualLanguageKey = $key;
-        }
+        $this->template->actualLanquage = $this->languagesValue();
+        $this->template->actualLanguageKey = $this->languagesKey();
         $this->template->admin = $this->getUser()->isInRole('admin');
         $this->template->domain = $this->getHttpRequest()->getUrl()->getHost();      // Předá jméno domény do šablony.
         $this->template->formPath = __DIR__ . '/templates/form.latte'; // Předá cestu ke globální šabloně formulářů do šablony.

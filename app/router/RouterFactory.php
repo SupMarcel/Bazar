@@ -20,7 +20,7 @@ final class RouterFactory
 	public static function createRouter(): RouteList
 	{
 		$router = new RouteList;
-		$router->addRoute('[<locale=cs cs|en>/]<presenter>/<action>', 'Homepage:default');
+		$router->addRoute('[<locale=cs-cz cs-cz|en>/]<presenter>/<action>', 'Homepage:default');
 		return $router;
 	}
 }

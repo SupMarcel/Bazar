@@ -36,3 +36,7 @@ translation:
 	dirs:
 		- app/lang
 	returnOriginalMessage: true
+
+logging:
+    logDir: %appDir%/Errorlog
+    email: otagon@seznam.com
